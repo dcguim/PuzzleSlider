@@ -1,6 +1,6 @@
 Sliding Puzzle Game
 ===================
-This is a simple implementation of:
+This is a simple implementation of a 3x3 table:
 http://en.wikipedia.org/wiki/Sliding_puzzle
 
 The Game still in development stage

@@ -8,22 +8,24 @@ typedef int bool;
 typedef struct node
 {
   int config[9];
-  struct node* neighbor;
+  int noNeighbor;
+  struct node* neighbor[MAX_NEIGHBORS];
   int missPiecePos;
   bool visited; 
 }Node;
 /*****************************************/
 
 /****************** Prototypes  **************************/
-Node * create_list(int startPoint[] );
 
-void create_neighbor ( Node* curr, const int config[] );
+Node* create_neighbor ( Node* curr, const int config[] );
+
+Node* create_head ( int config[] );
 
 /** up: neighbors[0] / left: neighbors[1]
     down: neighbors[2] / right: neighbors[3]  **/
 void which_neighbors (Node* curr, int neighbors[]);
 
-void free_list(Node* begin);
+void free_list ( Node** graph, int size );
 
 void print_node (Node* n);
 /*********************************************************/

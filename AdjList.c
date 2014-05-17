@@ -2,34 +2,57 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-/*
-TODO
-Implementar uma mais um nível de abstraçao que aponta
-para os nós existentes.
-*/
-static Node* head;
 
-Node* create_list( int startPoint[] )
+/************** Private Prototypes  ******************/
+
+Node* create_node(const int nodeConfig[] );
+
+/*****************************************************/
+
+/***** Static Variables ****/
+static Node* head;
+/**************************/
+
+Node* create_node(const int nodeConfig[] )
 {
   int i;
-
-  head = (Node*) malloc(sizeof(Node));
-  if (head == NULL)
+  bool hasHole = FALSE;
+  Node* newNode = (Node*) malloc(sizeof(Node));
+  if (newNode == NULL)
     {
-      printf ("Could not allocate head!\n");
-      exit (0);
+      printf ("Node could not be allocated!\n");
+      fflush(stdout);
+      exit(0);
     }
   
+  // Fill the config, missPiece
   for (i = 0; i < CONFIG_SIZE; i++)
     {
-      head->config[i] = startPoint[i];
-      if (startPoint[i] == 0)
-	head->missPiecePos = i;
+      newNode->config[i] = nodeConfig[i];
+      if (nodeConfig[i] == 0)
+	{
+	  hasHole = 1;
+	  newNode->missPiecePos = i;
+	}
     }
+  // The neightbor created has no neighbors yet
+  for (i=0; i < MAX_NEIGHBORS ;i++)
+    newNode->neighbor[i] = NULL;
 
-  head->neighbor = NULL;
+  // It wasn`t visited and the number of neighbors is zero
+  newNode->visited = FALSE;
+  newNode->noNeighbor = 0;
+
+  // If the configuration has no hole then the node is not 
+  if (hasHole == FALSE)
+    {
+      printf("Tryed to create node that had not a hole\n");
+      free(newNode);
+      fflush(stdout);
+      exit(0);
+    }
   
-  return head;
+  return newNode;
 }
 
 void print_node (Node* n)
@@ -40,7 +63,14 @@ void print_node (Node* n)
     {
       printf ("[%d]: %d\n",i, n->config[i]);
     }
+  for (i = 0; i < MAX_NEIGHBORS; i++)
+    {
+      if (n->neighbor[i] == NULL)
+	printf("neighbor[%d] = NULL\n", i);
+    }
+  printf("Number of neightbors :%d\n",n->noNeighbor);
   printf("hole:[%d]\n",n->missPiecePos);
+  printf("visited? %d\n",n->visited);
 }
 
 void which_neighbors (Node* curr, int neighbors[])
@@ -77,55 +107,37 @@ void which_neighbors (Node* curr, int neighbors[])
     neighbors[0] = curr->missPiecePos - 3;
 }
 
-
-void create_neighbor ( Node* curr, const int config[] )
+Node* create_head ( int config[] )
 {
-  int i;
-  Node* new,* ant,* aft;
-   
-  new = (Node*) malloc(sizeof(Node));
-  if (new == NULL)
-    {
-      printf("the neighbor could no be allocated");
-      exit (0);
-    }
+  Node* newNode = create_node( config );
 
-  // Find the last node created
-  aft = curr;
-  while (aft != NULL)
-    {
-      ant = aft;
-      aft = aft->neighbor;
-    }
+  // Keeps the start-position node of the game
+  head = newNode;
 
-  // Initialize new`s fields
-  ant->neighbor = new;
-  new->neighbor = NULL;
-  new->visited = FALSE;
-
-  // new`s config fill
-  for (i = 0; i < CONFIG_SIZE; i++)
-    {
-      new->config[i] = config[i];
-      // Indicate where the hole is
-      if (config[i] == 0)
-	new->missPiecePos = i;
-    }
+  return newNode;
 }
 
-void free_list (Node* begin)
+
+Node* create_neighbor ( Node* curr, const int config[] )
 {
-  int i = 0;
-  Node* aft;
-  Node* ant;
-  aft = begin;
-  
-  while (aft != NULL)
+  Node* newNode = create_node( config );
+
+  curr->neighbor[curr->noNeighbor] = newNode;
+  curr->noNeighbor++;
+
+  return newNode;
+ }
+
+void free_list ( Node** graph, int n )
+{
+  int i,j = 0;
+  //Node* aux;
+
+  for (i = 0; i < n; i++ )
     {
-      ant = aft;
-      aft = aft->neighbor;
-      free(ant);
-      i++;
+      free(graph[i]);
+      j++;
     }
-  printf ("list freed! (%d nodes found) \n", i);
+  
+  printf ("list freed! (%d nodes found) \n", j);
 }

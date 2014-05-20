@@ -42,6 +42,7 @@ Node* create_node(const int nodeConfig[] )
   // It wasn`t visited and the number of neighbors is zero
   newNode->visited = FALSE;
   newNode->noNeighbor = 0;
+  newNode->key = generate_key(nodeConfig);
 
   // If the configuration has no hole then the node is not 
   if (hasHole == FALSE)
@@ -117,6 +118,16 @@ Node* create_head ( int config[] )
   return newNode;
 }
 
+int generate_key(const int config[])
+{
+  int i,key = 0,pot = 1;
+  for (i = 0; i < CONFIG_SIZE; i++)
+    {
+      key += (config[i] + 1)*pot;
+      pot = pot*10;
+    }
+  return key;
+}
 
 Node* create_neighbor ( Node* curr, const int config[] )
 {
@@ -130,14 +141,14 @@ Node* create_neighbor ( Node* curr, const int config[] )
 
 void free_list ( Node** graph, int n )
 {
-  int i,j = 0;
+  int i;
   //Node* aux;
 
-  for (i = 0; i < n; i++ )
+  for (i = 0; i <= n; i++ )
     {
+      printf("[%d]key:%d\n",i,graph[i]->key);
       free(graph[i]);
-      j++;
     }
   
-  printf ("list freed! (%d nodes found) \n", j);
+  printf ("list freed! (%d nodes found) \n", i);
 }

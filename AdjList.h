@@ -11,7 +11,8 @@ typedef struct node
   int noNeighbor;
   struct node* neighbor[MAX_NEIGHBORS];
   int missPiecePos;
-  bool visited; 
+  bool visited;
+  int key;
 }Node;
 /*****************************************/
 
@@ -28,4 +29,6 @@ void which_neighbors (Node* curr, int neighbors[]);
 void free_list ( Node** graph, int size );
 
 void print_node (Node* n);
+
+int generate_key(const int config[]);
 /*********************************************************/

@@ -77,37 +77,71 @@ void insert_node (Node* parent,int conf[] )
 	  while (graph[tmp]->key > key)
 	    {
 	      tmp--;
-	    }
-	 
+	      if (tmp < 0)
+		{
+		  printf("Node %d must be set to the first position\n", generate_key(conf));
+		  fflush(stdout);
+		  break;
+		}
+	    }	 
 	}
       else if (graph[tmp]->key < key)
 	{
 	  // 1 or 2 times too.
 	  while (graph[tmp]->key < key)
 	    {
-	      tmp++;
+	      if (graph[tmp+1] == NULL)
+		{
+		  printf("node %d already is in the last position of the array!\n", generate_key(conf));
+		  fflush(stdout);
+		  break;
+		}
+	      
+	      // if the next key is already greater than ok, it doesnt need to search anymore
+	      if (graph[tmp + 1]->key > key || graph[tmp+1] == NULL)
+		break;
+	      else
+		tmp++;
 	    }
 	}
       printf("tmp:%d\n",tmp);
-      // I want to leave a hole for the node to be inserted, this explain the jump
-      tmp = tmp + 2;
-      // The size of graph must be increased by one
-      it ++;
-      // Open the hole(at tmp - 1) and push forward once
-      aux = graph[tmp];
-      pos = tmp - 1;
-      graph[tmp] = graph[tmp - 1];
-      tmp++;
-      i = tmp;
-      while (i < it)
+      // There are at least two nodes to reach graph[it]
+      if (tmp + 1 < it)
 	{
-	  a = graph[i];
+	  // I want to leave a hole for the node to be inserted, this explain the jump
+	  tmp = tmp + 2;
+	  // The size of graph must be increased by one
+	  it ++;
+	  // Open the hole(at tmp - 1) and push forward once i.e swap
+	  aux = graph[tmp];
+	  pos = tmp - 1;
+	  graph[tmp] = graph[tmp - 1];
+	  tmp++;
+	  i = tmp;
+	  // push to the right every node with greater key once
+	  while (i < it)
+	    {
+	      a = graph[i];
+	      graph[i] = aux;
+	      aux = a;
+	      i++;
+	    }
+	  // For the last item is just need  put the aux into it
 	  graph[i] = aux;
-	  aux = a;
-	  i++;
 	}
-      // For the last item is just need  put the aux into it
-      graph[i] = aux;
+      else if (tmp + 1 == it) // There is exactly one node to reach graph[it]
+	{
+	  it++;
+	  tmp++;
+	  aux = graph[tmp];
+	  pos = tmp;
+	  graph[it] = aux;
+	}
+      else// new node must be set to the last position
+	{
+	  it ++;
+	  pos = it;
+	}
       new = create_neighbor(parent, conf);
       printf("Pos %d the new node will be inserted!\n",tmp);
       graph[pos] = new;
@@ -182,7 +216,7 @@ int main (void)
   int cThree[9] = {1,2,3,4,5,6,7,0,8};
   int cOne[9] = {2,1,3,4,5,6,7,8,0};
   
-  int cIns[9] = {0,1,2,3,4,5,6,7,8};
+  int cIns[9] = {0,1,2,3,4,5,6,8,9};
   
   one = create_head(cOne);
   it = 0;

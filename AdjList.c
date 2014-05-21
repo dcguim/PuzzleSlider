@@ -131,11 +131,17 @@ int generate_key(const int config[])
 
 Node* create_neighbor ( Node* curr, const int config[] )
 {
-  Node* newNode = create_node( config );
-
+  Node* newNode;
+  if  (curr->noNeighbor > 3)
+    {
+      printf("Tentou inserir mais do que 4 vizinhos para um mesmo nó! ");
+      fflush(stdout);
+      exit(0);
+    }
+  newNode = create_node( config );
   curr->neighbor[curr->noNeighbor] = newNode;
   curr->noNeighbor++;
-
+ 
   return newNode;
  }
 

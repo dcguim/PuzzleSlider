@@ -150,9 +150,15 @@ void free_list ( Node** graph, int n )
   int i;
   //Node* aux;
 
+  if (n == 0)
+    {
+      free(graph[0]);
+      return;
+    }
   for (i = 0; i <= n; i++ )
     {
       printf("[%d]key:%d\n",i,graph[i]->key);
+      fflush(stdout);
       free(graph[i]);
     }
   

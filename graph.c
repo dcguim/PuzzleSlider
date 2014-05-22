@@ -10,14 +10,36 @@ static unsigned int it;
 static int closestKey;
 static int foundKey;
 
+int binary_search (int begin, int end, int key);
+Node* create_graph(Node* start, int config[]);
+void init_search();
+void insert_node (Node* parent,int conf[]);
+int binary_search (int begin, int end, int key);
+
+
 void init_search()
 {
   closestKey = -1;
   foundKey = -1;
 }
 
-int binary_search (int begin, int end, int key);
 
+
+Node* create_graph(Node* start, int config[]){
+  
+//   Node* start,*node;
+  int nBors[MAX_NEIGHBORS];
+  
+  start = create_head(config);
+  printf("ellfsakfdjsalk\n");
+  fflush(stdout);
+  
+  which_neighbors(start,nBors);
+  insert_node(start,config);
+  
+  return start;
+  
+}
 /*
 void DFS_algorithm(Node* start)
 {
@@ -62,10 +84,18 @@ void insert_node (Node* parent,int conf[] )
 {
   Node* aux,*a,*new;
   int tmp,i,key,pos;
-  //Node* new;
+
+  // Head is created previously so it just needs to be inserted into the graph
+  if (it == 0)
+    {
+        graph[0] = new;
+	return;
+    }
+  
   key = generate_key(conf);
   
   binary_search (0,it,key);
+
   // node was not found
   if (foundKey == -1 && closestKey != -1)
     {
@@ -205,19 +235,21 @@ int binary_search (int begin, int end, int key)
 
 int main (void)
 {
-  int i, key;
+  //int i, key;
   
   // some nodes
-  Node* one,*two,*three,*four,*five;
+  Node* one;/**two,*three,*four,*five;
   // their respective configs
   int cFive[9] = {0,1,2,3,4,5,6,8,8};
   int cFour[9] = {1,0,2,3,4,5,6,7,8};
-  int cTwo[9] = {1,2,3,4,5,6,7,8,0};
-  int cThree[9] = {1,2,3,4,5,6,7,0,8};
-  int cOne[9] = {2,1,3,4,5,6,7,8,0};
+  int cTwo[9] = {2,2,2,2,2,2,7,8,0};
+  int cThree[9] = {1,2,3,4,5,6,7,0,8};*/
+  int cOne[9] = {2,1,3,5,5,5,7,8,0};
   
-  int cIns[9] = {0,1,2,3,4,5,6,8,9};
-  
+  //int cIns[9] = {0,1,2,3,4,5,6,8,9};
+
+  one = create_graph(one,cOne);
+  /*
   one = create_head(cOne);
   it = 0;
   graph[it] = one;
@@ -261,8 +293,9 @@ int main (void)
   printf("\ntobe inserted %d", key);
   init_search();
   insert_node(five, cIns);
-
-  printf ("it = %d\n", it);
+  */
+  //print_node(graph[0]);
+  printf ("it ========= %d\n", it); 
   free_list(graph, it);
 
   return 0;

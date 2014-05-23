@@ -90,7 +90,8 @@ void which_neighbors (Node* curr, int neighbors[])
   for (i = 0; i < MAX_NEIGHBORS; i++)
     neighbors[i] = -1;
 
-  // There is a left-side neighbor
+  fflush(stdout);
+   // There is a left-side neighbor
   if ((curr->missPiecePos % 3) == 2)
     neighbors[1] = curr->missPiecePos -1;
   // There is a (left and right)side neighbor
@@ -102,7 +103,8 @@ void which_neighbors (Node* curr, int neighbors[])
   // Exists a right-side neighbor
   else //((curr->missPiecePos % 36) == 0)
     neighbors[3] = curr->missPiecePos + 1;
-
+  
+  fflush(stdout);
   // Exists a lower neighbor
   if ((curr->missPiecePos / 3) == 0)
     neighbors[2] = curr->missPiecePos + 3;

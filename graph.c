@@ -4,7 +4,7 @@
 #include<limits.h>
 
 static Node* graph[MAX_GRAPH_SIZE];
-static unsigned int it;
+unsigned int it;
 
 // Closest key index found from the input key 
 static int closestKey;
@@ -29,17 +29,40 @@ Node* create_graph(Node* start, int config[]){
   
 //   Node* start,*node;
   int nBors[MAX_NEIGHBORS];
+  int nConfig[CONFIG_SIZE];
+  int i,j;
   
   start = create_head(config);
   printf("ellfsakfdjsalk\n");
   fflush(stdout);
-  
-  which_neighbors(start,nBors);
+
   insert_node(start,config);
-  
-  return start;
-  
+
+  printf ("it ========= %d\n", it);
+  which_neighbors(start,nBors);
+
+  // Create the necessary nodes  
+  for (i = 0; i< MAX_NEIGHBORS; i++)
+    {
+      // if neighbor should be created
+      if (nBors[i] != -1)
+	{
+	  // Copy the previous configuration
+	  for (j = 0; j< CONFIG_SIZE; j++) 
+	    nConfig[j] = start->config[j];
+
+	  // Swap the hole with the nBors[i]
+	  nConfig[start->missPiecePos] = nConfig[nBors[i]];
+	  nConfig[nBors[i]] = 0;
+	  
+	  insert_node(start, nConfig);
+	  
+	  print_node(graph[it]);
+	}
+    }
+  return start;  
 }
+
 /*
 void DFS_algorithm(Node* start)
 {
@@ -85,17 +108,27 @@ void insert_node (Node* parent,int conf[] )
   Node* aux,*a,*new;
   int tmp,i,key,pos;
 
-  // Head is created previously so it just needs to be inserted into the graph
-  if (it == 0)
+  for (i = 0; i < CONFIG_SIZE; i++)
     {
-        graph[0] = new;
-	return;
+      printf ("[%d]:%d", i, conf[i]);
+      if (((i+1)%3) == 0)
+	printf("\n");
+    }
+  
+  // Head is created previously so it just needs to be inserted into the graph
+  if (graph[0] == NULL)
+    {
+      new = create_neighbor(parent, conf);
+      graph[0] = new;
+      print_node(graph[it]);
+      return;
     }
   
   key = generate_key(conf);
-  
+  init_search();
   binary_search (0,it,key);
 
+  printf ("foundkey :%d / closestkey: %d\n", foundKey, closestKey);
   // node was not found
   if (foundKey == -1 && closestKey != -1)
     {
@@ -133,15 +166,18 @@ void insert_node (Node* parent,int conf[] )
 	      else
 		tmp++;
 	    }
+	  
 	}
+
+      // The size of graph must be increased by one
+      it = it + 1;
+      printf("\n>>>>>it value: %d<<<<<<<\n", it);
       printf("tmp:%d\n",tmp);
       // There are at least two nodes to reach graph[it]
       if (tmp + 1 < it)
 	{
 	  // I want to leave a hole for the node to be inserted, this explain the jump
 	  tmp = tmp + 2;
-	  // The size of graph must be increased by one
-	  it ++;
 	  // Open the hole(at tmp - 1) and push forward once i.e swap
 	  aux = graph[tmp];
 	  pos = tmp - 1;
@@ -161,7 +197,6 @@ void insert_node (Node* parent,int conf[] )
 	}
       else if (tmp + 1 == it) // There is exactly one node to reach graph[it]
 	{
-	  it++;
 	  tmp++;
 	  aux = graph[tmp];
 	  pos = tmp;
@@ -169,7 +204,6 @@ void insert_node (Node* parent,int conf[] )
 	}
       else// new node must be set to the last position
 	{
-	  it ++;
 	  pos = it;
 	}
       new = create_neighbor(parent, conf);
@@ -244,7 +278,7 @@ int main (void)
   int cFour[9] = {1,0,2,3,4,5,6,7,8};
   int cTwo[9] = {2,2,2,2,2,2,7,8,0};
   int cThree[9] = {1,2,3,4,5,6,7,0,8};*/
-  int cOne[9] = {2,1,3,5,5,5,7,8,0};
+  int cOne[9] = {0,1,2,3,4,5,6,7,8};
   
   //int cIns[9] = {0,1,2,3,4,5,6,8,9};
 

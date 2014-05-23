@@ -60,9 +60,17 @@ void print_node (Node* n)
 {
   int i;
 
+  if (n == NULL)
+    {
+      printf("Tentativa de imprimir nó não instanciado!\n");
+      fflush(stdout);
+      exit(0);
+    }
   for (i = 0; i < CONFIG_SIZE; i++)
     {
-      printf ("[%d]: %d\n",i, n->config[i]);
+      printf ("[%d]:%d", i, n->config[i]);
+      if (((i+1)%3) == 0)
+	printf("\n");
     }
   for (i = 0; i < MAX_NEIGHBORS; i++)
     {
@@ -72,6 +80,7 @@ void print_node (Node* n)
   printf("Number of neightbors :%d\n",n->noNeighbor);
   printf("hole:[%d]\n",n->missPiecePos);
   printf("visited? %d\n",n->visited);
+  printf("key: %d\n",n->key);
 }
 
 void which_neighbors (Node* curr, int neighbors[])

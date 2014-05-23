@@ -1,5 +1,5 @@
 #include "AdjList.h"
-#define MAX_GRAPH_SIZE 387420489
+#define MAX_GRAPH_SIZE 362880 //9!
 
 int queue_put(Node* new);
 

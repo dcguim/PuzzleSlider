@@ -5,6 +5,10 @@ int queue_put(Node* new);
 
 void queue_init();
 
-int queue_get(Node* old);
+Node* queue_get();
 
 void print_size();
+
+int queue_length();
+
+void print_head();

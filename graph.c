@@ -1,7 +1,7 @@
-#include"fifo.h"
 #include<stdlib.h>
 #include<stdio.h>
 #include<limits.h>
+#include"fifo.h"
 
 static Node* graph[MAX_GRAPH_SIZE];
 unsigned int it;
@@ -29,45 +29,88 @@ void init_search()
 void create_recursive(Node* parent)
 {
   Node* new;
-  int i,j;
+  Node *father;
+  int i,j,nNull = 0,size,nToCreate = 4;
   int nBors[MAX_NEIGHBORS];
   int nConfig[CONFIG_SIZE];
-
-  printf("wooh\n");
-  fflush(stdout);
-  which_neighbors(parent,nBors);
-  print_node(parent);
-  printf("wooh\n");
-  fflush(stdout);
+  queue_init();
   
-   // Create the necessary nodes  
-  for (i = 0; i< MAX_NEIGHBORS; i++)
+  queue_put(parent);
+  //While the number of the neighbors already found are less than the
+  // neighbors that have to created and the queue is non empty
+  while (/*(nNull < nToCreate) &&*/ (queue_length() != 0))
     {
-      // if neighbor should be created
-      if (nBors[i] != -1)
+      nNull = 0;
+      
+      print_head(); 
+      //Get the parent from fifo
+      father = queue_get();
+
+      print_size();
+      printf("Node to be Explored(Parent)\n");
+      //fflush(stdout);
+      which_neighbors(father,nBors);
+      print_node(father);
+      nToCreate = 0;
+      for (i = 0; i < MAX_NEIGHBORS; i++)
 	{
-	  // Copy the previous configuration
-	  for (j = 0; j< CONFIG_SIZE; j++) 
-	    nConfig[j] = parent->config[j];
+	  if (nBors[i] != -1)
+	    nToCreate++;
+	}
+      printf("Have to create %d\n",nToCreate);
+      fflush(stdout);
+      // Create the necessary nodes  
+      for (i = 0; i< MAX_NEIGHBORS; i++)
+	{
+	  // if neighbor should be created
+	  if (nBors[i] != -1)
+	    {
+	      // Copy the previous configuration
+	      for (j = 0; j< CONFIG_SIZE; j++) 
+		nConfig[j] = father->config[j];
 
-	  // Swap the hole with the nBors[i]
-	  nConfig[parent->missPiecePos] = nConfig[nBors[i]];
-	  nConfig[nBors[i]] = 0;
+	      // Swap the hole with the nBors[i]
+	      nConfig[father->missPiecePos] = nConfig[nBors[i]];
+	      nConfig[nBors[i]] = 0;
 
-	  printf("woohInsertBefore\n");
-	  fflush(stdout);
-	  new = insert_node(parent, nConfig);
-	  printf("woohInsertAfter\n");
-	  fflush(stdout);
-	  
-	  if (new != NULL)
-	    create_recursive(new);
+	      printf("woohInsertBefore\n");
+	      fflush(stdout);
+	      
+	      printf("Config to be inserted in the stack(Son)\n");
+	      for (j = 0; j < CONFIG_SIZE; j++)
+		{
+		  printf ("[%d]:%d", j, nConfig[j]);
+		  if (((j+1)%3) == 0)
+		    printf("\n");
+		}
+	      fflush(stdout);
+	      
+	      new = insert_node(father, nConfig);
+	      printf("woohInsertAfter\n");
+	      fflush(stdout);
 
-	   printf("woohNULLConditionAfter\n");
-	  fflush(stdout);
+	      
+	      if (new == NULL)
+		{
+		  nNull = nNull + 1;
+		  printf ("no of non-created neighbors:%d\n",nNull);
+		}
+	      else
+		{// Stack the new node up
+		  printf("Node is entering in fifo\n");
+		  print_node(new);
+		  queue_put(new);
+		  print_head();
+		  print_size();
+		  printf("queue size:");
+		  print_size();
+		}
+	      printf("woohNULLConditionAfter\n");
+	      fflush(stdout);
+	    }
 	}
     }
-  print_node(parent);
+  //print_node(parent);
 }
 
 void create_graph(int config[]){
@@ -83,8 +126,8 @@ void create_graph(int config[]){
 }
 
 /*
-void DFS_algorithm(Node* start)
-{
+  void DFS_algorithm(Node* start)
+  {
   int i,j;
   int nBors[MAX_NEIGHBORS];
   int nConfig[CONFIG_SIZE];
@@ -101,25 +144,25 @@ void DFS_algorithm(Node* start)
   
   // Create the necessary nodes
   for (i = 0; i< MAX_NEIGHBORS; i++)
-    {
-      // if neighbor should be created
-      if (nBors[i] != -1)
-	{
-	  for (j = 0; j< CONFIG_SIZE; j++) 
-	    nConfig[j] = start->config[j];
+  {
+  // if neighbor should be created
+  if (nBors[i] != -1)
+  {
+  for (j = 0; j< CONFIG_SIZE; j++) 
+  nConfig[j] = start->config[j];
 
-	  // Swap the hole with the nBors[i]
-	  nConfig[start->missPiecePos] = nConfig[nBors[i]];
-	  nConfig[nBors[i]] = 0;
+  // Swap the hole with the nBors[i]
+  nConfig[start->missPiecePos] = nConfig[nBors[i]];
+  nConfig[nBors[i]] = 0;
 
-	  aux = create_neighbor(start, nConfig);
+  aux = create_neighbor(start, nConfig);
 	  
-	  print_node(aux);
-	  graph[it] = aux;
-	  it++;
-	}
-    }
-}
+  print_node(aux);
+  graph[it] = aux;
+  it++;
+  }
+  }
+  }
 */
 
 Node* insert_node (Node* parent,int conf[] )
@@ -129,9 +172,9 @@ Node* insert_node (Node* parent,int conf[] )
 
   /*for (i = 0; i < CONFIG_SIZE; i++)
     {
-      printf ("[%d]:%d", i, conf[i]);
-      if (((i+1)%3) == 0)
-	printf("\n");
+    printf ("[%d]:%d", i, conf[i]);
+    if (((i+1)%3) == 0)
+    printf("\n");
     }*/
   
   // Head is created previously so it just needs to be inserted into the graph
@@ -144,13 +187,13 @@ Node* insert_node (Node* parent,int conf[] )
       return new;
     }
 
-   printf("woohSearchBefore\n");
-	  fflush(stdout);
+  printf("woohSearchBefore\n");
+  fflush(stdout);
   key = generate_key(conf);
   init_search();
   binary_search (0,it,key);
- printf("woohSearchAfter\n");
-	  fflush(stdout);
+  printf("woohSearchAfter\n");
+  fflush(stdout);
  
   printf ("foundkey :%d / closestkey: %d\n", foundKey, closestKey);
   fflush(stdout);
@@ -178,7 +221,7 @@ Node* insert_node (Node* parent,int conf[] )
 	}
       else if (graph[tmp]->key < key)
 	{
-	   printf("woohGraph[key]<key\n");
+	  printf("woohGraph[key]<key\n");
 	  fflush(stdout);
 	  // 1 or 2 times too.
 	  while (graph[tmp]->key < key)
@@ -242,7 +285,7 @@ Node* insert_node (Node* parent,int conf[] )
     }
   
   else if (foundKey >= 0)    
-      printf("\nFound! [%d]\n", foundKey);
+    printf("\nFound! [%d]\n", foundKey);
     
   return NULL;
 }
@@ -250,49 +293,45 @@ Node* insert_node (Node* parent,int conf[] )
 int binary_search (int begin, int end, int key)
 {
   int pivot;
-  
-  // Stop condition
-  if (begin >= end)
+  printf("Entrando na bs... begin:%d, end:%d e key:%d\n", begin, end, key);
+  fflush(stdout);
+  while (begin <= end)
     {
-      if (begin == end)
+      pivot = (begin+end)/2;  
+      printf ("\npivot:%d\n", pivot);
+      if (key == graph[pivot]->key)
 	{
-	  if (graph[begin]->key == key)
-	    {
-	      foundKey = begin;
-	    }
-	  else
-	    closestKey = begin;
-	  return -1;
+	  foundKey = pivot;
+	  break;
+	}
+      else if (key < graph[pivot]->key)
+	{
+	  end = pivot - 1;
+	}
+      else
+	{
+	  begin = pivot + 1;
+	}
+    }
+  // Stop condition
+  if (begin > end)
+    {
+
+      if (end < 0)
+	{
+	  closestKey = 0;
+	  return 0;
+	}
+      else if ( begin > it)
+	{
+	  closestKey = it;
+	  return 0;
 	}
       
-      printf("begin:%d end:%d\n", begin, end);
-      if (end < 0)
-	closestKey = 0;
-      else if ( begin > it)
-	closestKey = it;
-      else
-	closestKey = end; 
-	 
-      return -1;
+      closestKey = end;
     }
-  // The array was previously sorted so will be a good heuristic to 
-  // set the pivot to the middle of the array
-  pivot = begin + (end - begin)/2;
-  printf ("\npivot:%d\n", pivot);
-  if (key == graph[pivot]->key)
-    {
-      foundKey = pivot;
-    }
-  else if (key < graph[pivot]->key)
-    {
-      binary_search(begin, pivot - 1, key);
-    }
-  else
-    {
-      binary_search(pivot + 1, end, key);
-    }
-  return 0;
- }
+  return 1;
+}
 
 int main (void)
 {
@@ -311,49 +350,49 @@ int main (void)
   create_graph(cOne);
   
   /*
-  one = create_head(cOne);
-  it = 0;
-  graph[it] = one;
+    one = create_head(cOne);
+    it = 0;
+    graph[it] = one;
   
-  two = create_neighbor(one, cTwo);
-  it++;
-  graph[it] = two;
+    two = create_neighbor(one, cTwo);
+    it++;
+    graph[it] = two;
   
-  three = create_neighbor(one, cThree);
-  it++;
-  graph[it] = three;
+    three = create_neighbor(one, cThree);
+    it++;
+    graph[it] = three;
   
-  four = create_neighbor(one, cFour);
-  it++;
-  graph[it] = four;
+    four = create_neighbor(one, cFour);
+    it++;
+    graph[it] = four;
   
-  five = create_neighbor(two, cFive);
-  it++;
-  graph[it] = five;
+    five = create_neighbor(two, cFive);
+    it++;
+    graph[it] = five;
   
 
-  for (i = 0; i < 9; i++)
+    for (i = 0; i < 9; i++)
     {
-      one->config[i] = cOne[i];
-      two->config[i] = cTwo[i];
-      three->config[i] = cThree[i];
-      four->config[i] = cFour[i];
-      five->config[i] = cFive[i];
+    one->config[i] = cOne[i];
+    two->config[i] = cTwo[i];
+    three->config[i] = cThree[i];
+    four->config[i] = cFour[i];
+    five->config[i] = cFive[i];
     }
-  one->key = generate_key(cOne);
-  two->key = generate_key(cTwo);
-  three->key = generate_key(cThree);
-  four->key = generate_key(cFour);
-  five->key = generate_key(cFive);
+    one->key = generate_key(cOne);
+    two->key = generate_key(cTwo);
+    three->key = generate_key(cThree);
+    four->key = generate_key(cFour);
+    five->key = generate_key(cFive);
   
-  key = generate_key(cIns);
+    key = generate_key(cIns);
 
-  printf("\nKeys generated: [0]:%d,\n[1]:%d,\n[2]:%d,\n[3]:%d,\n[4]:%d",
-  	 one->key,two->key,three->key,four->key,five->key);
+    printf("\nKeys generated: [0]:%d,\n[1]:%d,\n[2]:%d,\n[3]:%d,\n[4]:%d",
+    one->key,two->key,three->key,four->key,five->key);
 
-  printf("\ntobe inserted %d", key);
-  init_search();
-  insert_node(five, cIns);
+    printf("\ntobe inserted %d", key);
+    init_search();
+    insert_node(five, cIns);
   */
   //print_node(graph[0]);
   printf ("it = %d\n", it);

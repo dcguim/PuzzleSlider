@@ -2,10 +2,13 @@
 #include<stdio.h>
 #include<limits.h>
 #include "tree.h"
+#define NO_CCOMP 2
 
-static Node* graph[MAX_GRAPH_SIZE];
+static Node* graph[NO_CCOMP][MAX_GRAPH_SIZE];
+static int cCompCreate;
 unsigned int it;
-static Node* head;
+static Node* head[NO_CCOMP];
+static int cCompSize;
 
 // Closest key index found from the input key 
 static int closestKey;
@@ -18,6 +21,12 @@ Node* insert_node (Node* parent,int conf[]);
 int binary_search_mod (int begin, int end, int key);
 void create_iterative(Node* parent);
 
+void init_create_graph(int cComp)
+{
+  hasCreatedHead = -1;
+  cCompCreate = cComp - 1;
+  it = 0;   
+}
 
 void init_search()
 {
@@ -77,6 +86,19 @@ void create_iterative(Node* parent)
 		  print_head();
 		  print_size();
 		}
+	      else // There is a found key, just need set in the neighbors
+		{
+		  if  (father->noNeighbor > 3)
+		    {
+		      printf("Tentou inserir mais do que 4 vizinhos para um mesmo nó! ");
+		      fflush(stdout);
+		      exit(0);
+		    }
+		  father->neighbor[father->noNeighbor] = graph[cCompCreate][foundKey];
+		  father->noNeighbor++;
+		  printf("father:\n");
+		  print_node(father);
+		}
 	    }
 	}
     }
@@ -87,13 +109,9 @@ void create_graph(int config[]){
   
   Node* new = NULL;
 
-  head = insert_node(new,config);
+  head[cCompCreate] = insert_node(new,config);
 
-  head->visited = TRUE;  
-
-  create_iterative(head);
-}
-
+  create_iterative(head[cCompCreate]);
 void DFS_visit(Tree* tree, Node* node)
 {
   // printf("node visited - %d with %d neighbors\n", node->dfs_visited,node->noNeighbor);
@@ -105,7 +123,6 @@ void DFS_visit(Tree* tree, Node* node)
       add_child(tree, node, node->neighbor[i]);
       DFS_visit(tree, node->neighbor[i]);
     }
-  }
 }
 
 Tree* DFS(Node* node)
@@ -130,7 +147,7 @@ Node* insert_node (Node* parent,int conf[] )
   if (hasCreatedHead == -1)
     {
       new = create_head(conf);
-      graph[0] = new;      
+      graph[cCompCreate][0] = new;      
       hasCreatedHead = 1;
       return new;
     }
@@ -147,10 +164,10 @@ Node* insert_node (Node* parent,int conf[] )
 
       // This piece of code make sure the tmp iterator is pointing to the
       // greater smaller key when compared to the key to be inserted 
-      if (graph[tmp]->key > key)
+      if (graph[cCompCreate][tmp]->key > key)
 	{
 	  // This should iterate 1 maybe 2 times
-	  while (graph[tmp]->key > key)
+	  while (graph[cCompCreate][tmp]->key > key)
 	    {
 	      tmp--;
 	      if (tmp < 0)
@@ -158,15 +175,15 @@ Node* insert_node (Node* parent,int conf[] )
 		
 	    }	 
 	}
-      else if (graph[tmp]->key < key)
+      else if (graph[cCompCreate][tmp]->key < key)
 	{
 	  // 1 or 2 times too.
-	  while (graph[tmp]->key < key)
+	  while (graph[cCompCreate][tmp]->key < key)
 	    {
-	      if (graph[tmp+1] == NULL)
+	      if (graph[cCompCreate][tmp+1] == NULL)
 		  break; 
 	      // if the next key is already greater than ok, it doesnt need to search anymore
-	      if (graph[tmp + 1]->key > key || graph[tmp+1] == NULL)
+	      if (graph[cCompCreate][tmp + 1]->key > key || graph[cCompCreate][tmp+1] == NULL)
 		break;
 	      else
 		tmp++;
@@ -182,28 +199,28 @@ Node* insert_node (Node* parent,int conf[] )
 	  // I want to leave a hole for the node to be inserted, this explain the jump
 	  tmp = tmp + 2;
 	  // Open the hole(at tmp - 1) and push forward once i.e swap
-	  aux = graph[tmp];
+	  aux = graph[cCompCreate][tmp];
 	  pos = tmp - 1;
-	  graph[tmp] = graph[tmp - 1];
+	  graph[cCompCreate][tmp] = graph[cCompCreate][tmp - 1];
 	  tmp++;
 	  i = tmp;
 	  // push to the right every node with greater key once
 	  while (i < it)
 	    {
-	      a = graph[i];
-	      graph[i] = aux;
+	      a = graph[cCompCreate][i];
+	      graph[cCompCreate][i] = aux;
 	      aux = a;
 	      i++;
 	    }
 	  // For the last item is just need  put the aux into it
-	  graph[i] = aux;
+	  graph[cCompCreate][i] = aux;
 	}
-      else if (tmp + 1 == it) // There is exactly one node to reach graph[it]
+      else if (tmp + 1 == it) // There is exactly one node to reach graph[cCompCreate][it]
 	{
 	  tmp++;
-	  aux = graph[tmp];
+	  aux = graph[cCompCreate][tmp];
 	  pos = tmp;
-	  graph[it] = aux;
+	  graph[cCompCreate][it] = aux;
 	}
       else// new node must be set to the last position
 	{
@@ -211,13 +228,10 @@ Node* insert_node (Node* parent,int conf[] )
 	}
       printf(">pos = %d<\n",pos );
       new = create_neighbor(parent, conf);
-      graph[pos] = new;
+      graph[cCompCreate][pos] = new;
 
       return new;  
     }
-  
-  else if (foundKey >= 0)    
-    printf("\nFound! [%d]\n", foundKey);
     
   return NULL;
 }
@@ -228,12 +242,12 @@ int binary_search_mod (int begin, int end, int key)
   while (begin <= end)
     {
       pivot = (begin+end)/2;  
-      if (key == graph[pivot]->key)
+      if (key == graph[cCompCreate][pivot]->key)
 	{
 	  foundKey = pivot;
 	  break;
 	}
-      else if (key < graph[pivot]->key)
+      else if (key < graph[cCompCreate][pivot]->key)
 	{
 	  end = pivot - 1;
 	}
@@ -264,9 +278,10 @@ int binary_search_mod (int begin, int end, int key)
 int main (void)
 {
   int cOne[9] = {0,1,2,3,4,5,6,7,8};
+  int cTwo[9] = {0,2,1,3,4,5,6,7,8};
 
-  // Node* nodes[4];
-  // int cTwo[9] = {3,1,2,0,4,5,6,7,8};
+  // Create the connected component one
+  init_create_graph(1);  
   // int cThree[9] = {2,1,5,3,4,0,6,7,8};
   // int cFour[9] = {1,0,2,3,4,5,6,7,8};
 
@@ -311,7 +326,6 @@ int main (void)
    
   Tree* tree;
 
-  hasCreatedHead = -1;
   create_graph(cOne);
   
   tree = DFS(head);
@@ -323,8 +337,20 @@ int main (void)
   // {
   //   print_node(graph[i]);
   // }
-  
-  free_list(graph, it);
+
+  cCompSize = it;
+
+  printf ("Finished first CC, size:%d \n", cCompSize);
+   // Create the connected component two
+  init_create_graph(2);  
+  create_graph(cTwo);
+
+printf ("Size second component: %d\n", it+1);
+  free_list(graph[0], cCompSize);
+  printf ("Freed first cc\n");
+  fflush(stdout);
+  free_list(graph[1], cCompSize);
+  printf ("Freed second cc\n");
 
   return 0;
 }

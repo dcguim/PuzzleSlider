@@ -2,7 +2,7 @@
 #define FALSE 0
 #define CONFIG_SIZE 9
 #define MAX_NEIGHBORS 4
-#define MAX_CHILDREN 2
+#define MAX_CHILDREN 4
 typedef int bool;
 
 /**** Node of a List ****/

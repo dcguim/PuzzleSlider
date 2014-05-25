@@ -11,13 +11,12 @@ static Node* head;
 static int closestKey;
 static int foundKey;
 static int hasCreatedHead;
-static Tree* DFS_Trees[2];
 
 void create_graph(int config[]);
 void init_search();
 Node* insert_node (Node* parent,int conf[]);
 int binary_search_mod (int begin, int end, int key);
-void create_recursive(Node* parent);
+void create_iterative(Node* parent);
 
 
 void init_search()
@@ -97,100 +96,29 @@ void create_graph(int config[]){
 
 void DFS_visit(Tree* tree, Node* node)
 {
-  printf("node visited - %d with %d neighbors\n", node->dfs_visited,node->noNeighbor);
+  // printf("node visited - %d with %d neighbors\n", node->dfs_visited,node->noNeighbor);
   int i;
-  // int adjSize = node->noNeighbor;
   node->dfs_visited=TRUE;
   for (i=0; i<node->noNeighbor; i++){
-    // if(node->noNeighbor==0)
-    //   break;
     if(node->neighbor[i]->dfs_visited == FALSE){
-      printf("ENTROU!!! node %d  \n",node->key);
+      // printf("ENTROU!!! node %d  \n",node->key);
       add_child(tree, node, node->neighbor[i]);
       DFS_visit(tree, node->neighbor[i]);
     }
   }
 }
 
-Tree* DFS(Node* nodes[],int size)
+Tree* DFS(Node* node)
 {
-  int i;
-  Tree* newTree = create_tree(nodes[0]);
-  for (i =0; i< it; i++){
-    if(nodes[i]->dfs_visited == FALSE){
-      DFS_visit(newTree, nodes[i]);
-    }
-  }
+  Tree* newTree = create_tree(node);
+  // node->dfs_visited = TRUE;
+  // for (i =0; i< node->noNeighbor; i++){
+    // if(node->neighbor[i]->dfs_visited == FALSE){
+      DFS_visit(newTree, newTree->root);
+    // }
+  // }
   return newTree;
 }
-
-// Tree* DFS_test(Node* graph[],int size)
-// {
-//   printf("TESTE 5\n");
-//   int i;
-//   Tree* newTree = create_tree(graph[0]);
-//   printf("TESTE 6\n");
-//   for (i =0; i< size; i++){
-//     if(graph[i]->dfs_visited == FALSE){
-//       printf("TESTE 7\n");
-//       DFS_visit(newTree, graph[i]);
-//     }
-//   }
-//   printf("TESTE 8\n");
-//   return newTree;
-// }
-
-// void DFS_visit(Node* node)
-// {
-//   int i;
-//   node->visited=TRUE;
-//   for (i=0; i<node->noNeighbor; i++){
-//     if(node->neighbor[i]->visited == FALSE){
-//       queue_put(node->neighbor[i]);
-//       DFS_visit(node->neighbor[i]);
-//     }  
-//   }
-// }
-
-/*
-  void DFS_algorithm(Node* start)
-  {
-  int i,j;
-  int nBors[MAX_NEIGHBORS];
-  int nConfig[CONFIG_SIZE];
-  Node* aux;
-
-  print_size();
-  queue_get(start);
-  printf("Analisando ...\n");
-  print_node(start);
-  
-  start->visited = TRUE;
-  // Return in nBors the nodes to be created
-  which_neighbors(start,nBors);
-  
-  // Create the necessary nodes
-  for (i = 0; i< MAX_NEIGHBORS; i++)
-  {
-  // if neighbor should be created
-  if (nBors[i] != -1)
-  {
-  for (j = 0; j< CONFIG_SIZE; j++) 
-  nConfig[j] = start->config[j];
-
-  // Swap the hole with the nBors[i]
-  nConfig[start->missPiecePos] = nConfig[nBors[i]];
-  nConfig[nBors[i]] = 0;
-
-  aux = create_neighbor(start, nConfig);
-	  
-  print_node(aux);
-  graph[it] = aux;
-  it++;
-  }
-  }
-  }
-*/
 
 Node* insert_node (Node* parent,int conf[] )
 {
@@ -335,7 +263,6 @@ int binary_search_mod (int begin, int end, int key)
 
 int main (void)
 {
-  int i;
   int cOne[9] = {0,1,2,3,4,5,6,7,8};
 
   // Node* nodes[4];
@@ -366,6 +293,9 @@ int main (void)
 
   // Tree* test = DFS_test(nodes,4);
 
+  // for(i=0;i<4;i++)
+  //   print_node(nodes[i]);
+
   // print_tree(test->root,0);
 
 
@@ -384,13 +314,15 @@ int main (void)
   hasCreatedHead = -1;
   create_graph(cOne);
   
-  tree = DFS(graph,it);
+  tree = DFS(head);
 
-  printf("\n\nPRINTING TREE\n\n");
-  // print_tree(tree->root,0);
+  printf("\n\nPRINTING TREE - %d NODES %d EDGES\n\n",tree->nNodes,tree->nEdges);
+  print_tree(tree->root,0);
 
-  for(i=0;i<200;i++)
-    print_node(graph[i]);
+  // for (int i = 0; i < it; ++i)
+  // {
+  //   print_node(graph[i]);
+  // }
   
   free_list(graph, it);
 

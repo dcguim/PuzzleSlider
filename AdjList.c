@@ -46,6 +46,7 @@ Node* create_node(const int nodeConfig[] )
 
   // It wasn`t visited and the number of neighbors and child is zero
   newNode->visited = FALSE;
+  newNode->dfs_visited = FALSE;
   newNode->noNeighbor = 0;
   newNode->noChild = 0;
   newNode->key = generate_key(nodeConfig);
@@ -174,8 +175,8 @@ void free_list ( Node** graph, int n )
     }
   for (i = 0; i <= n; i++ )
     {
-      printf("[%d]key:%d\n",i,graph[i]->key);
-      fflush(stdout);
+      // printf("[%d]key:%d\n",i,graph[i]->key);
+      // fflush(stdout);
       free(graph[i]);
     }
   

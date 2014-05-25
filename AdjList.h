@@ -16,6 +16,7 @@ typedef struct node
   struct node* parent;
   int missPiecePos;
   bool visited;
+  bool dfs_visited;
   int key;
 }Node;
 /*****************************************/

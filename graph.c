@@ -95,6 +95,51 @@ void create_graph(int config[]){
   create_iterative(head);
 }
 
+void DFS_visit(Tree* tree, Node* node)
+{
+  printf("node visited - %d with %d neighbors\n", node->dfs_visited,node->noNeighbor);
+  int i;
+  // int adjSize = node->noNeighbor;
+  node->dfs_visited=TRUE;
+  for (i=0; i<node->noNeighbor; i++){
+    // if(node->noNeighbor==0)
+    //   break;
+    if(node->neighbor[i]->dfs_visited == FALSE){
+      printf("ENTROU!!! node %d  \n",node->key);
+      add_child(tree, node, node->neighbor[i]);
+      DFS_visit(tree, node->neighbor[i]);
+    }
+  }
+}
+
+Tree* DFS(Node* nodes[],int size)
+{
+  int i;
+  Tree* newTree = create_tree(nodes[0]);
+  for (i =0; i< it; i++){
+    if(nodes[i]->dfs_visited == FALSE){
+      DFS_visit(newTree, nodes[i]);
+    }
+  }
+  return newTree;
+}
+
+// Tree* DFS_test(Node* graph[],int size)
+// {
+//   printf("TESTE 5\n");
+//   int i;
+//   Tree* newTree = create_tree(graph[0]);
+//   printf("TESTE 6\n");
+//   for (i =0; i< size; i++){
+//     if(graph[i]->dfs_visited == FALSE){
+//       printf("TESTE 7\n");
+//       DFS_visit(newTree, graph[i]);
+//     }
+//   }
+//   printf("TESTE 8\n");
+//   return newTree;
+// }
+
 // void DFS_visit(Node* node)
 // {
 //   int i;
@@ -103,29 +148,9 @@ void create_graph(int config[]){
 //     if(node->neighbor[i]->visited == FALSE){
 //       queue_put(node->neighbor[i]);
 //       DFS_visit(node->neighbor[i]);
+//     }  
 //   }
 // }
-// 
-// void DFS()
-// {
-//   int i;
-//   for (i =0; i< it; i++){
-//     if(graph[i]->visited == FALSE){
-//       DFS_visit(graph[i]);
-//   }
-// }
-
-void DFS_visit(Node* node)
-{
-  int i;
-  node->visited=TRUE;
-  for (i=0; i<node->noNeighbor; i++){
-    if(node->neighbor[i]->visited == FALSE){
-      queue_put(node->neighbor[i]);
-      DFS_visit(node->neighbor[i]);
-    }  
-  }
-}
 
 /*
   void DFS_algorithm(Node* start)
@@ -310,30 +335,64 @@ int binary_search_mod (int begin, int end, int key)
 
 int main (void)
 {
+  int i;
   int cOne[9] = {0,1,2,3,4,5,6,7,8};
 
-  int cTwo[9] = {3,1,2,0,4,5,6,7,8};
-  int cThree[9] = {2,1,5,3,4,0,6,7,8};
-  int cFour[9] = {1,0,2,3,4,5,6,7,8};
+  // Node* nodes[4];
+  // int cTwo[9] = {3,1,2,0,4,5,6,7,8};
+  // int cThree[9] = {2,1,5,3,4,0,6,7,8};
+  // int cFour[9] = {1,0,2,3,4,5,6,7,8};
 
-  Node* n1 = create_head(cOne);
-  Node* n2 = create_head(cTwo);
-  Node* n3 = create_head(cThree);
-  Node* n4 = create_head(cFour);
-  Tree* t1 = create_tree(n1);
-  add_child(t1,n1,n2);
-  add_child(t1,n1,n4);
-  add_child(t1,n4,n3);
+  // Node* n1 = create_head(cOne);
+  // Node* n2 = create_head(cTwo);
+  // Node* n3 = create_head(cThree);
+  // Node* n4 = create_head(cFour);
+  // n1->key=1;
+  // n2->key=2;
+  // n3->key=3;
+  // n4->key=4;
+
+  // nodes[0]=n1;
+  // nodes[1]=n2;
+  // nodes[2]=n3;
+  // nodes[3]=n4;
   
-  printf("Nodes: %d Edges: %d\n",t1->nNodes,t1->nEdges);
-  print_tree(t1->root,0);
+  // n1->neighbor[0]=n2;
+  // n1->noNeighbor++;
+  // n1->neighbor[1]=n4;
+  // n1->noNeighbor++;
+  // n4->neighbor[0]=n3;
+  // n4->noNeighbor++;
+
+  // Tree* test = DFS_test(nodes,4);
+
+  // print_tree(test->root,0);
+
+
+
+  // Tree* t1 = create_tree(n1);
+
+  // add_child(t1,n1,n2);
+  // add_child(t1,n1,n4);
+  // add_child(t1,n4,n3);
+
+  // printf("Nodes: %d Edges: %d\n",t1->nNodes,t1->nEdges);
+  // print_tree(t1->root,0);
    
-  // hasCreatedHead = -1;
-  // create_graph(cOne);
+  Tree* tree;
+
+  hasCreatedHead = -1;
+  create_graph(cOne);
   
-  // DFS();
+  tree = DFS(graph,it);
+
+  printf("\n\nPRINTING TREE\n\n");
+  // print_tree(tree->root,0);
+
+  for(i=0;i<200;i++)
+    print_node(graph[i]);
   
-  // free_list(graph, it);
+  free_list(graph, it);
 
   return 0;
 }

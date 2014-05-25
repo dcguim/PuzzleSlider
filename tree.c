@@ -40,29 +40,3 @@ void print_tree(Node* node, int indent){
   }
 }
 
-// void printAST(Node* root,int tabs)
-// { 
-//   Node* type=tree->root;
-//   printIndent(tabs);
-//   printf("%d",node->key);
-//   if(node->sVal == NULL)
-//     if(node->type==AST_LITNUM)
-//       if(node->symbolType!=NULL)
-//         printf(" val:%d - %s (line %d)",node->iVal,getSymbolType(node),node->line);
-//       else
-//         printf(" val:%d (line %d)",node->iVal,node->line);
-//     else    
-//       printf( "(line %d)", node->line);
-//   else if(node->symbolType!=NULL)
-//     printf(" %s - %s (line %d)",node->sVal,getSymbolType(node),node->line);
-//   else
-//     printf(" %s (line %d)",node->sVal,node->line);
-//   printf( "\n");
-
-//   if(node->firstChild != NULL){ 
-//     printAST(node->firstChild,tabs+1) ;
-//   }
-//   if(node->prox != NULL)
-//     printAST(node->prox,tabs) ;
-// }
-

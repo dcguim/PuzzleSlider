@@ -36,12 +36,18 @@ Node* create_node(const int nodeConfig[] )
 	}
     }
   // The neightbor created has no neighbors yet
-  for (i=0; i < MAX_NEIGHBORS ;i++)
+  for (i=0; i < MAX_NEIGHBORS ;i++){
     newNode->neighbor[i] = NULL;
+  }  
 
-  // It wasn`t visited and the number of neighbors is zero
+  // The node created has no childs yet
+  for (i=0; i<MAX_CHILDREN; i++)
+    newNode->child[i] = NULL;
+
+  // It wasn`t visited and the number of neighbors and child is zero
   newNode->visited = FALSE;
   newNode->noNeighbor = 0;
+  newNode->noChild = 0;
   newNode->key = generate_key(nodeConfig);
 
   // If the configuration has no hole then the node is not 

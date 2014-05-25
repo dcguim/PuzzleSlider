@@ -1,7 +1,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<limits.h>
-#include"fifo.h"
+#include "tree.h"
 
 static Node* graph[MAX_GRAPH_SIZE];
 unsigned int it;
@@ -11,6 +11,7 @@ static Node* head;
 static int closestKey;
 static int foundKey;
 static int hasCreatedHead;
+static Tree* DFS_Trees[2];
 
 void create_graph(int config[]);
 void init_search();
@@ -92,6 +93,38 @@ void create_graph(int config[]){
   head->visited = TRUE;  
 
   create_iterative(head);
+}
+
+// void DFS_visit(Node* node)
+// {
+//   int i;
+//   node->visited=TRUE;
+//   for (i=0; i<node->noNeighbor; i++){
+//     if(node->neighbor[i]->visited == FALSE){
+//       queue_put(node->neighbor[i]);
+//       DFS_visit(node->neighbor[i]);
+//   }
+// }
+// 
+// void DFS()
+// {
+//   int i;
+//   for (i =0; i< it; i++){
+//     if(graph[i]->visited == FALSE){
+//       DFS_visit(graph[i]);
+//   }
+// }
+
+void DFS_visit(Node* node)
+{
+  int i;
+  node->visited=TRUE;
+  for (i=0; i<node->noNeighbor; i++){
+    if(node->neighbor[i]->visited == FALSE){
+      queue_put(node->neighbor[i]);
+      DFS_visit(node->neighbor[i]);
+    }  
+  }
 }
 
 /*
@@ -278,11 +311,29 @@ int binary_search_mod (int begin, int end, int key)
 int main (void)
 {
   int cOne[9] = {0,1,2,3,4,5,6,7,8};
-   
-  hasCreatedHead = -1;
-  create_graph(cOne);
+
+  int cTwo[9] = {3,1,2,0,4,5,6,7,8};
+  int cThree[9] = {2,1,5,3,4,0,6,7,8};
+  int cFour[9] = {1,0,2,3,4,5,6,7,8};
+
+  Node* n1 = create_head(cOne);
+  Node* n2 = create_head(cTwo);
+  Node* n3 = create_head(cThree);
+  Node* n4 = create_head(cFour);
+  Tree* t1 = create_tree(n1);
+  add_child(t1,n1,n2);
+  add_child(t1,n1,n4);
+  add_child(t1,n4,n3);
   
-  free_list(graph, it);
+  printf("Nodes: %d Edges: %d\n",t1->nNodes,t1->nEdges);
+  print_tree(t1->root,0);
+   
+  // hasCreatedHead = -1;
+  // create_graph(cOne);
+  
+  // DFS();
+  
+  // free_list(graph, it);
 
   return 0;
 }

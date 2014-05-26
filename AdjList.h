@@ -36,4 +36,6 @@ void free_list ( Node** graph, int size );
 void print_node (Node* n);
 
 int generate_key(const int config[]);
+
+void add_child(Node* parent, Node* child);
 /*********************************************************/

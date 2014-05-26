@@ -11,6 +11,7 @@ Node* create_node(const int nodeConfig[] );
 
 /***** Static Variables ****/
 static Node* head;
+static int edges;
 /**************************/
 
 Node* create_node(const int nodeConfig[] )
@@ -133,6 +134,8 @@ Node* create_head ( int config[] )
   // Keeps the start-position node of the game
   head = newNode;
 
+  edges = 0;
+
   return newNode;
 }
 
@@ -177,7 +180,7 @@ void free_list ( Node** graph, int n )
     {
       if (graph[i] != NULL)
 	{
-	  printf("[%d]key:%d\n",i,graph[i]->key);
+	  // printf("[%d]key:%d\n",i,graph[i]->key);
 	  fflush(stdout);
 	  free(graph[i]);
 	}
@@ -191,4 +194,14 @@ void free_list ( Node** graph, int n )
     }
   
   printf ("list freed! (%d nodes found) \n", i);
+}
+
+void add_child(Node* parent, Node* child){
+  int i;
+  for (i=0; parent->child[i]; i++){ //Get the correct position for the child
+  }
+  parent->child[i] = child;
+  child->parent = parent;
+  parent->noChild++;
+  edges+=1;
 }

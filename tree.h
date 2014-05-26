@@ -11,6 +11,6 @@ typedef struct tree
 }Tree;
 
 Tree* create_tree(Node* root);
-void add_child(Tree* tree, Node* parent, Node* child);
-void print_tree(Node* tree,int indent);
-void print_indent(int indent);
+// void add_child(Tree* tree, Node* parent, Node* child);
+// void print_tree(Node* tree,int indent);
+// void print_indent(int indent);

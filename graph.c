@@ -125,14 +125,15 @@ void create_graph(int config[]){
 
 void DFS_visit(Node* node, int compIndex)
 {
-  // printf("node visited - %d with %d neighbors\n", node->dfs_visited,node->noNeighbor);
   int i;
+  //Mark the node as visited so it won't become child to other nodes
   node->dfs_visited=TRUE;
   for (i=0; i<node->noNeighbor; i++){
     if(node->neighbor[i]->dfs_visited == FALSE){
-      // printf("ENTROU!!! node %d  \n",node->key);
-      nEdges[compIndex]+=1; //add edge
+      //Add neighbor as a child of node and add an edge to graph
+      nEdges[compIndex]+=1;
       add_child(node, node->neighbor[i]);
+      //Use recently added child as next node to be explored
       DFS_visit(node->neighbor[i],compIndex);
     }
   }
@@ -141,12 +142,12 @@ void DFS_visit(Node* node, int compIndex)
 void DFS(Node* node[],int size)
 {
   int i;
+  //Runs DFS from each node in node[]
   for (i =0; i< size; i++){
     if (node[i]->dfs_visited == FALSE){
         DFS_visit(node[i],i);
     }
   }
-  // return newTree;
 }
 
 Node* insert_node (Node* parent,int conf[] )
@@ -287,6 +288,7 @@ int binary_search_mod (int begin, int end, int key)
   return 1;
 }
 
+//Prints the amount of indents before printing node
 void print_indent(int indent){
   int i;
   for(i=0; i<indent; i++)
@@ -298,12 +300,14 @@ void print_DFS(Node* node, int indent){
   // print_indent(indent);
   printf("%d\n",node->key);
   if(node->noChild > 0){
+    //If there is child, add indentation for the child node
     indent++;
     for(i=0; i<MAX_CHILDREN; i++){
       if(node->child[i] != NULL){
         print_DFS(node->child[i],indent);
       } 
     }
+    //All children added, remove one indent
     indent--;
   }
 }
@@ -331,6 +335,7 @@ int main (void)
   print_node(head[0]);
   print_node(head[1]);
 
+  //Run dfs for the heads of each component
   DFS(head,NO_CCOMP);
   printf("IMPRIMINDO 1 - %d edges\n",nEdges[0]);
   print_DFS(head[0],0);

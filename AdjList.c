@@ -48,6 +48,7 @@ Node* create_node(const int nodeConfig[] )
   // It wasn`t visited and the number of neighbors and child is zero
   newNode->visited = FALSE;
   newNode->dfs_visited = FALSE;
+  newNode->bfs_visited = FALSE;
   newNode->noNeighbor = 0;
   newNode->noChild = 0;
   newNode->key = generate_key(nodeConfig);

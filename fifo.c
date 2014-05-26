@@ -40,7 +40,7 @@ Node* queue_get()
 
   old = queue[queueOut];
 
-  print_node(old);
+  // print_node(old);
 
   queueOut = (queueOut + 1) % QUEUE_SIZE;
 
@@ -61,5 +61,5 @@ int queue_length()
 void print_head()
 {
   printf("Cabeça\n");
-  print_node(queue[queueOut]);
+  // print_node(queue[queueOut]);
 }

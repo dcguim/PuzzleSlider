@@ -2,7 +2,7 @@
 #define FALSE 0
 #define CONFIG_SIZE 9
 #define MAX_NEIGHBORS 4
-#define MAX_CHILDREN 4
+#define MAX_CHILDREN 3
 typedef int bool;
 
 /**** Node of a List ****/
@@ -17,6 +17,7 @@ typedef struct node
   int missPiecePos;
   bool visited;
   bool dfs_visited;
+  bool bfs_visited;
   int key;
 }Node;
 /*****************************************/

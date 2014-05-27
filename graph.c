@@ -74,7 +74,7 @@ void create_iterative(Node* parent)
       nConfig[father->missPiecePos] = nConfig[nBors[i]];
       nConfig[nBors[i]] = 0;
 
-      printf("Config to be inserted in the stack(Son)\n");
+      // printf("Config to be inserted in the stack(Son)\n");
       for (j = 0; j < CONFIG_SIZE; j++)
       {
         printf ("[%d]:%d", j, nConfig[j]);
@@ -96,13 +96,13 @@ void create_iterative(Node* parent)
         {
           if  (father->noNeighbor > 3)
           {
-            printf("Tentou inserir mais do que 4 vizinhos para um mesmo nó! ");
+            // printf("Tentou inserir mais do que 4 vizinhos para um mesmo nó! ");
             fflush(stdout);
             exit(0);
           }
           father->neighbor[father->noNeighbor] = graph[cCompCreate][foundKey];
           father->noNeighbor++;
-          printf("father:\n");
+          // printf("father:\n");
           // print_node(father);
         }
       }
@@ -228,7 +228,7 @@ Node* insert_node (Node* parent,int conf[] )
 
       // The size of graph must be increased by one
       it = it + 1;
-      printf(">it = %d<\n", it);
+      // printf(">it = %d<\n", it);
       // There are at least two nodes to reach graph[it]
       if (tmp + 1 < it)
 	{
@@ -262,7 +262,7 @@ Node* insert_node (Node* parent,int conf[] )
 	{
 	  pos = it;
 	}
-      printf(">pos = %d<\n",pos );
+      // printf(">pos = %d<\n",pos );
       new = create_neighbor(parent, conf);
       graph[cCompCreate][pos] = new;
 

@@ -61,5 +61,5 @@ int queue_length()
 void print_head()
 {
   printf("Cabeça\n");
-  // print_node(queue[queueOut]);
+  print_node(queue[queueOut]);
 }

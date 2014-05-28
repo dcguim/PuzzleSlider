@@ -197,11 +197,10 @@ void free_list ( Node** graph, int n )
   printf ("list freed! (%d nodes found) \n", i);
 }
 
-void add_child(Node* parent, Node* child){
+void add_child(Node* parent, Node* child)
+{
   int i;
-  for (i=0; parent->child[i]; i++){ //Get the correct position for the child
-  }
-  parent->child[i] = child;
+  parent->child[parent->noChild] = child;
   child->parent = parent;
   parent->noChild++;
   edges+=1;

@@ -1,7 +1,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<limits.h>
-#include "tree.h"
+#include "fifo.h"
 #define NO_CCOMP 2
 
 static Node* graph[NO_CCOMP][MAX_GRAPH_SIZE];
@@ -12,6 +12,7 @@ static int cCompSize;
 static int nEdges[NO_CCOMP];
 static int GraphEdges = 0;
 static int bfsEdges[NO_CCOMP];
+static int cont=0;
 
 // Closest key index found from the input key 
 static int closestKey;
@@ -52,7 +53,7 @@ void create_iterative(Node* parent)
   
   while ( (queue_length() != 0))
   {
-    print_head(); 
+    // print_head(); 
 
     father = queue_get();
       // Get the nightbors to be created from the parent node
@@ -74,14 +75,6 @@ void create_iterative(Node* parent)
       nConfig[father->missPiecePos] = nConfig[nBors[i]];
       nConfig[nBors[i]] = 0;
 
-      // printf("Config to be inserted in the stack(Son)\n");
-      for (j = 0; j < CONFIG_SIZE; j++)
-      {
-        printf ("[%d]:%d", j, nConfig[j]);
-        if (((j+1)%3) == 0)
-          printf("\n");
-      }
-
       new = insert_node(father, nConfig);
 
 
@@ -89,8 +82,8 @@ void create_iterative(Node* parent)
 		{// Stack the new node up
       // print_node(new);
       queue_put(new);
-      print_head();
-      print_size();
+      // print_head();
+      // print_size();
     }
 	      else // There is a found key, just need set in the neighbors
         {
@@ -127,6 +120,8 @@ void create_graph(int config[]){
 void DFS_visit(Node* node, int compIndex)
 {
   int i;
+  if(cont>100)
+    return;
   //Mark the node as visited so it won't become child to other nodes
   node->dfs_visited=TRUE;
   for (i=0; i<node->noNeighbor; i++){
@@ -135,6 +130,7 @@ void DFS_visit(Node* node, int compIndex)
       nEdges[compIndex]+=1;
       add_child(node, node->neighbor[i]);
       //Use recently added child as next node to be explored
+      cont++;
       DFS_visit(node->neighbor[i],compIndex);
     }
   }
@@ -151,22 +147,22 @@ void DFS(Node* node[],int size)
   }
 }
 
-void BFS(Node* nodes[],int size){
+void BFS(Node* node){
+  int i,j;
+  cont = 0;
   queue_init();
   Node* top;
-  int i,j;
-  for(i=0; i<size; i++){
-    queue_put(nodes[i]);
-    nodes[i]->bfs_visited = TRUE;
-    while(queue_length() > 0){
-      top = queue_get();
-      for(j=0; j<top->noNeighbor; j++){
-        if(top->neighbor[j]->bfs_visited == FALSE){
-          bfsEdges[i]++;
-          top->neighbor[j]->bfs_visited = TRUE;
-          add_child(top,top->neighbor[j]);
-          queue_put(top->neighbor[j]);
-        }
+  queue_put(node);
+  node->bfs_visited = TRUE;
+  while(queue_length() > 0){
+    top = queue_get();
+    for(j=0; j<top->noNeighbor; j++){
+      if(top->neighbor[j]->bfs_visited == FALSE){
+          // cont++;
+        bfsEdges[i]++;
+        top->neighbor[j]->bfs_visited = TRUE;
+        add_child(top,top->neighbor[j]);
+        queue_put(top->neighbor[j]);
       }
     }
   }
@@ -311,7 +307,7 @@ int binary_search_mod (int begin, int end, int key)
   return 1;
 }
 
-//Prints the amount of indents before printing node
+//Prints the amount of indents before printing node (NOT WORKING)
 void print_indent(int indent){
   int i;
   for(i=0; i<indent; i++)
@@ -320,7 +316,7 @@ void print_indent(int indent){
 
 void print_DFS(Node* node, int indent){
   int i;
-  // print_indent(indent);
+  print_indent(indent);
   printf("%d\n",node->key);
   if(node->noChild > 0){
     //If there is child, add indentation for the child node
@@ -339,7 +335,6 @@ int main (void)
 {
 
   printf("Edges %d\n", GraphEdges);
-  int i; 
   int cOne[9] = {0,1,2,3,4,5,6,7,8};
   int cTwo[9] = {0,2,1,3,4,5,6,7,8};
 
@@ -358,7 +353,16 @@ int main (void)
   print_node(head[0]);
   print_node(head[1]);
 
-  //Run dfs for the heads of each component
+  printf("Vizinhos do Head[0]\n");
+  for (int i = 0; i < head[0]->noNeighbor; ++i)
+  {
+    for (int j = 0; j < head[0]->neighbor[i]->noNeighbor; ++j)
+    {
+      print_node(head[0]->neighbor[i]->neighbor[j]);
+    }
+  }
+
+  // Run dfs for the heads of each component
   // DFS(head,NO_CCOMP);
   // printf("IMPRIMINDO 1 - %d edges\n",nEdges[0]);
   // print_DFS(head[0],0);
@@ -366,21 +370,23 @@ int main (void)
   // print_DFS(head[1],0);
   // printf("Edges %d\n", GraphEdges);
 
-  for(i=0; i<NO_CCOMP; i++)
-    nEdges[i] = 0;
+  // for(i=0; i<NO_CCOMP; i++)
+  //   nEdges[i] = 0;
 
   // for(i=0; i<MAX_GRAPH_SIZE; i++){
   //   grapf[0][i]->child = NULL;
   //   grapf[1][i]->child = NULL;
   // }
 
+  BFS(graph[0][0]);
+  print_DFS(graph[0][0],0);
 
-  BFS(head,NO_CCOMP);
-  printf("IMPRIMINDO BFS 1 - %d edges\n",bfsEdges[0]);
-  print_DFS(head[0],0);
-  printf("IMPRIMINDO BFS 2 - %d edges\n",bfsEdges[1]);
-  print_DFS(head[1],0);
-  printf("Edges %d\n", GraphEdges);
+  // BFS(head,NO_CCOMP);
+  // printf("IMPRIMINDO BFS 1 - %d edges\n",bfsEdges[0]);
+  // print_DFS(head[0],0);
+  // printf("IMPRIMINDO BFS 2 - %d edges\n",bfsEdges[1]);
+  // print_DFS(head[1],0);
+  // printf("Edges %d\n", GraphEdges);
   
   printf ("Size second component: %d\n", it+1);
   free_list(graph[0], cCompSize);

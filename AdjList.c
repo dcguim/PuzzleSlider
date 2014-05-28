@@ -46,7 +46,7 @@ Node* create_node(const int nodeConfig[] )
     newNode->child[i] = NULL;
 
   // It wasn`t visited and the number of neighbors and child is zero
-  newNode->visited = FALSE;
+  newNode->time = 0;
   newNode->dfs_visited = FALSE;
   newNode->bfs_visited = FALSE;
   newNode->noNeighbor = 0;
@@ -88,7 +88,8 @@ void print_node (Node* n)
     }
   printf("Number of neightbors :%d\n",n->noNeighbor);
   printf("hole:[%d]\n",n->missPiecePos);
-  printf("visited? %d\n",n->visited);
+  printf("noChild: %d\n",n->noChild);
+  printf("time: %d\n", n->time);
   printf("key: %d\n",n->key);
 }
 

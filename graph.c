@@ -5,25 +5,33 @@
 #define NO_CCOMP 2
 
 static Node* graph[NO_CCOMP][MAX_GRAPH_SIZE];
+static Node* plays[MAX_GRAPH_SIZE];
+static int noPlays = 0;
+static int MAX_DIST = 0;
 static int cCompCreate;
 unsigned int it;
 static Node* head[NO_CCOMP];
 static int cCompSize;
-static int nEdges[NO_CCOMP];
+static int dfsEdges[NO_CCOMP];
 static int GraphEdges = 0;
 static int bfsEdges[NO_CCOMP];
-static int cont=0;
 
 // Closest key index found from the input key 
 static int closestKey;
 static int foundKey;
 static int hasCreatedHead;
+static int endPoint[9] = {1,2,3,4,5,6,7,8,0};
+static int endKey;
 
 void create_graph(int config[]);
 void init_search();
 Node* insert_node (Node* parent,int conf[]);
 int binary_search_mod (int begin, int end, int key);
 void create_iterative(Node* parent);
+void BFS(Node* node);
+void init_create_graph(int cComp);
+void set_max_dist(Node* node, int dist);
+void find_max_dist(Node* node,int dist);
 
 void init_create_graph(int cComp)
 {
@@ -53,7 +61,6 @@ void create_iterative(Node* parent)
   
   while ( (queue_length() != 0))
   {
-    // print_head(); 
 
     father = queue_get();
       // Get the nightbors to be created from the parent node
@@ -62,57 +69,61 @@ void create_iterative(Node* parent)
       // Create the necessary nodes  
     for (i = 0; i< MAX_NEIGHBORS; i++)
     {
-	  // if neighbor should be created
-     if (nBors[i] != -1)
-     {
+    // if neighbor should be created
+      if (nBors[i] != -1)
+      {
         // Insert the edges to the neighbors
-      edges += nBors[i];
-	      // Copy the previous configuration
-      for (j = 0; j< CONFIG_SIZE; j++) 
-        nConfig[j] = father->config[j];
+        edges += nBors[i];
+        // Copy the previous configuration
+        for (j = 0; j< CONFIG_SIZE; j++) 
+          nConfig[j] = father->config[j];
 
-	      // Swap the hole with the nBors[i]
-      nConfig[father->missPiecePos] = nConfig[nBors[i]];
-      nConfig[nBors[i]] = 0;
+        // Swap the hole with the nBors[i]
+        nConfig[father->missPiecePos] = nConfig[nBors[i]];
+        nConfig[nBors[i]] = 0;
 
-      new = insert_node(father, nConfig);
+        new = insert_node(father, nConfig);
+        
 
-
-      if (new != NULL)
-		{// Stack the new node up
-      // print_node(new);
+        if (new != NULL)
+    {// Stack the new node up
       queue_put(new);
-      // print_head();
-      // print_size();
     }
-	      else // There is a found key, just need set in the neighbors
+        else if (foundKey > -1) // There is a found key, just need set in the neighbors
         {
           if  (father->noNeighbor > 3)
           {
-            // printf("Tentou inserir mais do que 4 vizinhos para um mesmo nó! ");
+            printf("Tryed to insert more than 4 nodes! ");
             fflush(stdout);
             exit(0);
           }
-          father->neighbor[father->noNeighbor] = graph[cCompCreate][foundKey];
-          father->noNeighbor++;
-          // printf("father:\n");
-          // print_node(father);
+          if (graph[cCompCreate][foundKey] != NULL)
+          {
+            father->neighbor[father->noNeighbor] = graph[cCompCreate][foundKey];
+            father->noNeighbor++;
+          }
+          else
+          {
+            printf ("Watch out! there is no such neighbor to be included!(create iteratives)\n");
+            fflush(stdout);
+            exit(0);
+          }
         }
       }
     }
   }
   GraphEdges += edges/2;
-  //print_node(parent);
 }
 
 void create_graph(int config[]){
-  
+
   Node* new = NULL;
 
   head[cCompCreate] = insert_node(new,config);
 
-  nEdges[cCompCreate] = 0;
-
+  dfsEdges[cCompCreate] = 0;
+  bfsEdges[cCompCreate] = 0;
+  
   create_iterative(head[cCompCreate]);
 }
 
@@ -120,17 +131,14 @@ void create_graph(int config[]){
 void DFS_visit(Node* node, int compIndex)
 {
   int i;
-  if(cont>100)
-    return;
   //Mark the node as visited so it won't become child to other nodes
   node->dfs_visited=TRUE;
   for (i=0; i<node->noNeighbor; i++){
     if(node->neighbor[i]->dfs_visited == FALSE){
       //Add neighbor as a child of node and add an edge to graph
-      nEdges[compIndex]+=1;
+      bfsEdges[compIndex]+=1;
       add_child(node, node->neighbor[i]);
       //Use recently added child as next node to be explored
-      cont++;
       DFS_visit(node->neighbor[i],compIndex);
     }
   }
@@ -142,14 +150,34 @@ void DFS(Node* node[],int size)
   //Runs DFS from each node in node[]
   for (i =0; i< size; i++){
     if (node[i]->dfs_visited == FALSE){
-        DFS_visit(node[i],i);
+      DFS_visit(node[i],i);
     }
   }
 }
 
+void set_max_dist(Node* node, int dist)
+{
+  int i;
+  printf("dist: %d\n", dist);
+  if (dist > MAX_DIST)
+  {
+    for (i = 0; i < noPlays; i++)
+    {
+      plays[i] = NULL;
+    }
+    plays[0] = node;
+    noPlays = 1;
+    MAX_DIST = dist;
+  }
+  else if (dist == MAX_DIST)
+  {
+    plays[noPlays] = node;
+    noPlays++;
+  }
+}
+
 void BFS(Node* node){
-  int i,j;
-  cont = 0;
+  int j;
   queue_init();
   Node* top;
   queue_put(node);
@@ -157,9 +185,13 @@ void BFS(Node* node){
   while(queue_length() > 0){
     top = queue_get();
     for(j=0; j<top->noNeighbor; j++){
-      if(top->neighbor[j]->bfs_visited == FALSE){
-          // cont++;
-        bfsEdges[i]++;
+      if(top->neighbor[j] == NULL)
+      {
+        printf("Tried to access a NULL neighbor\n");
+        fflush(stdout);
+      }
+      else if(top->neighbor[j]->bfs_visited == FALSE){
+        bfsEdges[0]++;
         top->neighbor[j]->bfs_visited = TRUE;
         add_child(top,top->neighbor[j]);
         queue_put(top->neighbor[j]);
@@ -167,7 +199,6 @@ void BFS(Node* node){
     }
   }
 }
-
 
 Node* insert_node (Node* parent,int conf[] )
 {
@@ -177,225 +208,228 @@ Node* insert_node (Node* parent,int conf[] )
   // Head was created previously so it
   // just needs to be inserted into the graph
   if (hasCreatedHead == -1)
-    {
-      new = create_head(conf);
-      graph[cCompCreate][0] = new;      
-      hasCreatedHead = 1;
-      return new;
-    }
+  {
+    new = create_head(conf);
+    graph[cCompCreate][0] = new;      
+    hasCreatedHead = 1;
+    return new;
+  }
   
   key = generate_key(conf);
 
   init_search();
   binary_search_mod (0,it,key);
   
-   // node was not found
+  // node was not found
   if (foundKey == -1 && closestKey != -1)
-    {
-      tmp = closestKey;
+  {
+    tmp = closestKey;
 
       // This piece of code make sure the tmp iterator is pointing to the
       // greater smaller key when compared to the key to be inserted 
-      if (graph[cCompCreate][tmp]->key > key)
-	{
-	  // This should iterate 1 maybe 2 times
-	  while (graph[cCompCreate][tmp]->key > key)
-	    {
-	      tmp--;
-	      if (tmp < 0)
-		  break;
-		
-	    }	 
-	}
-      else if (graph[cCompCreate][tmp]->key < key)
-	{
-	  // 1 or 2 times too.
-	  while (graph[cCompCreate][tmp]->key < key)
-	    {
-	      if (graph[cCompCreate][tmp+1] == NULL)
-		  break; 
-	      // if the next key is already greater than ok, it doesnt need to search anymore
-	      if (graph[cCompCreate][tmp + 1]->key > key || graph[cCompCreate][tmp+1] == NULL)
-		break;
-	      else
-		tmp++;
-	    }
-	}
+    if (graph[cCompCreate][tmp]->key > key)
+    {
+    // This should iterate 1 maybe 2 times
+      while (graph[cCompCreate][tmp]->key > key)
+      {
+        tmp--;
+        if (tmp < 0)
+          break;
+
+      }  
+    }
+    else if (graph[cCompCreate][tmp]->key < key)
+    {
+    // 1 or 2 times too.
+      while (graph[cCompCreate][tmp]->key < key)
+      {
+        if (graph[cCompCreate][tmp+1] == NULL)
+          break; 
+        // if the next key is already greater than ok, it doesnt need to search anymore
+        if (graph[cCompCreate][tmp + 1]->key > key || graph[cCompCreate][tmp+1] == NULL)
+          break;
+        else
+          tmp++;
+      }
+    }
 
       // The size of graph must be increased by one
-      it = it + 1;
-      // printf(">it = %d<\n", it);
+    it = it + 1;
+
       // There are at least two nodes to reach graph[it]
-      if (tmp + 1 < it)
-	{
-	  // I want to leave a hole for the node to be inserted, this explain the jump
-	  tmp = tmp + 2;
-	  // Open the hole(at tmp - 1) and push forward once i.e swap
-	  aux = graph[cCompCreate][tmp];
-	  pos = tmp - 1;
-	  graph[cCompCreate][tmp] = graph[cCompCreate][tmp - 1];
-	  tmp++;
-	  i = tmp;
-	  // push to the right every node with greater key once
-	  while (i < it)
-	    {
-	      a = graph[cCompCreate][i];
-	      graph[cCompCreate][i] = aux;
-	      aux = a;
-	      i++;
-	    }
-	  // For the last item is just need  put the aux into it
-	  graph[cCompCreate][i] = aux;
-	}
+    if (tmp + 1 < it)
+    {
+    // I want to leave a hole for the node to be inserted, this explain the jump
+      tmp = tmp + 2;
+    // Open the hole(at tmp - 1) and push forward once i.e swap
+      aux = graph[cCompCreate][tmp];
+      pos = tmp - 1;
+      graph[cCompCreate][tmp] = graph[cCompCreate][tmp - 1];
+      tmp++;
+      i = tmp;
+    // push to the right every node with greater key once
+      while (i < it)
+      {
+        a = graph[cCompCreate][i];
+        graph[cCompCreate][i] = aux;
+        aux = a;
+        i++;
+      }
+    // For the last item is just need  put the aux into it
+      graph[cCompCreate][i] = aux;
+    }
       else if (tmp + 1 == it) // There is exactly one node to reach graph[cCompCreate][it]
-	{
-	  tmp++;
-	  aux = graph[cCompCreate][tmp];
-	  pos = tmp;
-	  graph[cCompCreate][it] = aux;
-	}
+      {
+        tmp++;
+        aux = graph[cCompCreate][tmp];
+        pos = tmp;
+        graph[cCompCreate][it] = aux;
+      }
       else// new node must be set to the last position
-	{
-	  pos = it;
-	}
-      // printf(">pos = %d<\n",pos );
+      {
+        pos = it;
+      }
       new = create_neighbor(parent, conf);
       graph[cCompCreate][pos] = new;
 
       return new;  
     }
     
-  return NULL;
-}
+    return NULL;
+  }
 
-int binary_search_mod (int begin, int end, int key)
-{
-  int pivot;
-  while (begin <= end)
+  int binary_search_mod (int begin, int end, int key)
+  {
+    int pivot;
+    while (begin <= end)
     {
       pivot = (begin+end)/2;  
       if (key == graph[cCompCreate][pivot]->key)
-	{
-	  foundKey = pivot;
-	  break;
-	}
+      {
+        foundKey = pivot;
+        break;
+      }
       else if (key < graph[cCompCreate][pivot]->key)
-	{
-	  end = pivot - 1;
-	}
+      {
+        end = pivot - 1;
+      }
       else
-	{
-	  begin = pivot + 1;
-	}
+      {
+        begin = pivot + 1;
+      }
     }
   // Stop condition
-  if (begin > end)
+    if (begin > end)
     {
 
       if (end < 0)
-	{
-	  closestKey = 0;
-	  return 0;
-	}
+      {
+        closestKey = 0;
+        return 0;
+      }
       else if ( begin > it)
-	{
-	  closestKey = it;
-	  return 0;
-	}
+      {
+        closestKey = it;
+        return 0;
+      }
       closestKey = end;
     }
-  return 1;
-}
-
-//Prints the amount of indents before printing node (NOT WORKING)
-void print_indent(int indent){
-  int i;
-  for(i=0; i<indent; i++)
-    printf(" "); 
-}
-
-void print_DFS(Node* node, int indent){
-  int i;
-  print_indent(indent);
-  printf("%d\n",node->key);
-  if(node->noChild > 0){
-    //If there is child, add indentation for the child node
-    indent++;
-    for(i=0; i<MAX_CHILDREN; i++){
-      if(node->child[i] != NULL){
-        print_DFS(node->child[i],indent);
-      } 
-    }
-    //All children added, remove one indent
-    indent--;
+    return 1;
   }
-}
 
-int main (void)
-{
-
-  printf("Edges %d\n", GraphEdges);
-  int cOne[9] = {0,1,2,3,4,5,6,7,8};
-  int cTwo[9] = {0,2,1,3,4,5,6,7,8};
-
-  // Create the connected component one
-  init_create_graph(1);  
-  create_graph(cOne);
-
-  cCompSize = it;
-
-  printf ("Finished first CC, size:%d \n", cCompSize);
-   // Create the connected component two
-  init_create_graph(2);  
-  create_graph(cTwo);
-
-  printf("Heads:\n");
-  print_node(head[0]);
-  print_node(head[1]);
-
-  printf("Vizinhos do Head[0]\n");
-  for (int i = 0; i < head[0]->noNeighbor; ++i)
+//Prints the amount of indents before printing node
+  void print_indent(int indent)
   {
-    for (int j = 0; j < head[0]->neighbor[i]->noNeighbor; ++j)
+    int i;
+    for(i=0; i<indent; i++)
+      printf(" "); 
+  }
+
+  void print_DFS(Node* node, int indent){
+    int i;
+    print_indent(indent);
+    printf("%d\n",node->key);
+    if(node->noChild > 0)
     {
-      print_node(head[0]->neighbor[i]->neighbor[j]);
+      //If there is child, add indentation for the child node
+      indent++;
+      for(i=0; i<MAX_CHILDREN; i++)
+      {
+        if(node->child[i] != NULL)
+        {
+          print_DFS(node->child[i],indent);
+        } 
+      }
+      //All children added, remove one indent
+      indent--;
     }
   }
 
-  // Run dfs for the heads of each component
-  // DFS(head,NO_CCOMP);
-  // printf("IMPRIMINDO 1 - %d edges\n",nEdges[0]);
-  // print_DFS(head[0],0);
-  // printf("IMPRIMINDO 2 - %d edges\n",nEdges[1]);
-  // print_DFS(head[1],0);
-  // printf("Edges %d\n", GraphEdges);
+  void find_max_dist(Node* node,int dist){
+    int i;
+    queue_init();
+    if(node->noChild > 0)
+    {
+      dist++;
+      for(i=0; i<MAX_CHILDREN; i++)
+      {
+        if(node->child[i] != NULL)
+        {
+          if(dist >= MAX_DIST)
+            set_max_dist(node, dist);
+          find_max_dist(node->child[i], dist);
+        } 
+      }
+      dist--;
+    }
+  }
 
-  // for(i=0; i<NO_CCOMP; i++)
-  //   nEdges[i] = 0;
-
-  // for(i=0; i<MAX_GRAPH_SIZE; i++){
-  //   grapf[0][i]->child = NULL;
-  //   grapf[1][i]->child = NULL;
-  // }
-
-  BFS(graph[0][0]);
-  print_DFS(graph[0][0],0);
-
-  // BFS(head,NO_CCOMP);
-  // printf("IMPRIMINDO BFS 1 - %d edges\n",bfsEdges[0]);
-  // print_DFS(head[0],0);
-  // printf("IMPRIMINDO BFS 2 - %d edges\n",bfsEdges[1]);
-  // print_DFS(head[1],0);
-  // printf("Edges %d\n", GraphEdges);
+  int main (void)
+  {
+    int cOne[9] = {0,1,2,3,4,5,6,7,8};
+    int cTwo[9] = {0,2,1,3,4,5,6,7,8};
   
-  printf ("Size second component: %d\n", it+1);
-  free_list(graph[0], cCompSize);
-  printf ("Freed first cc\n");
-  fflush(stdout);
-  free_list(graph[1], cCompSize);
-  printf ("Freed second cc\n");
+    // Create the connected component one
+    endKey = generate_key(endPoint);
 
-  
+    init_create_graph(1);  
+    create_graph(cOne);
 
-  return 0;
-}
+    cCompSize = it;
+
+    printf ("Finished first CC\n");
+
+    // Create the connected component two
+    init_create_graph(2);  
+    create_graph(cTwo);
+
+    printf ("Finished second CC\n");
+
+    printf("Endpoint Key: %d\n", generate_key(endPoint));
+    printf("---GRAPH[0][0]---\n");
+    print_node(graph[0][0]);
+    
+
+    // Set the connected component to be the first and the search
+    cCompCreate = 0;
+    init_search();
+    binary_search_mod (0,cCompSize,endKey);
+    // Indeed it is on the first connected component and it is on the foundKey index 
+    if (foundKey >  1)
+      printf ("Found endPoint first CC!!!\n");
+
+    //Search for longest distance from endPoint node
+    BFS(graph[0][foundKey]);
+    printf("\nStarting search for maximum distance from endPoint\n");
+    find_max_dist(graph[0][foundKey],0);
+    printf("----MAX DIST FOUND: %d----\n", MAX_DIST);
+
+    printf ("Size second component: %d\n", it+1);
+    free_list(graph[0], cCompSize);
+    printf ("Freed first cc\n");
+    fflush(stdout);
+    free_list(graph[1], cCompSize);
+    printf ("Freed second cc\n");
+
+    return 0;
+  }

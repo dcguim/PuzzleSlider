@@ -199,7 +199,8 @@ void free_list ( Node** graph, int n )
 
 void add_child(Node* parent, Node* child)
 {
-  int i;
+  if(parent->noChild >= MAX_CHILDREN)
+    return;
   parent->child[parent->noChild] = child;
   child->parent = parent;
   parent->noChild++;

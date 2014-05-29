@@ -15,7 +15,7 @@ typedef struct node
   struct node* child[MAX_CHILDREN];
   struct node* parent;
   int missPiecePos;
-  bool visited;
+  int time;
   bool dfs_visited;
   bool bfs_visited;
   int key;

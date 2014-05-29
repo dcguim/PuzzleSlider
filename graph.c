@@ -7,6 +7,8 @@
 static Node* graph[NO_CCOMP][MAX_GRAPH_SIZE];
 static Node* plays[MAX_GRAPH_SIZE];
 static int noPlays = 0;
+static Node* nodesUnvisited[MAX_GRAPH_SIZE];
+static int noNodesUn = 0;
 static int MAX_DIST = 0;
 static int cCompCreate;
 unsigned int it;
@@ -131,21 +133,56 @@ void create_graph(int config[]){
 
 void DFS_visit(Node* node, int compIndex)
 {
-  int i;
+  int i,j;
   //Mark the node as visited so it won't become child to other nodes
   node->dfs_visited=TRUE;
   node->time = preTime;
   preTime++;
   print_node(node);
-  for (i=0; i<node->noNeighbor; i++){
-    if(node->neighbor[i]->dfs_visited == FALSE){
+  for (i=0; i<node->noNeighbor; i++)
+    {
+    if(node->neighbor[i]->dfs_visited == FALSE)
+      {
       //Add neighbor as a child of node and add an edge to graph
-      bfsEdges[compIndex]+=1;
+      dfsEdges[compIndex]+=1;
       add_child(node, node->neighbor[i]);
+
+      noNodesUn = 0;
+      DFS_visit_bridge_search(node->neighbor[i], node);
+
+      reset_dfs_visited(nodesUnvisited, noNodesUn);
+	      
       //Use recently added child as next node to be explored
       DFS_visit(node->neighbor[i],compIndex);
     }
   }
+}
+
+// Garantir que o node tem dfs_visited = FALSE
+int DFS_visit_bridge_search(Node* node, Node* father)
+{
+  int i;
+  int low = 0;
+  //Mark the node as visited so it won't become child to other nodes
+  node->dfs_visited=TRUE;
+  for (i=0; i< node->noNeighbor; i++)
+    {
+      if (node->neighbor[i] != father)
+	{
+	  if(node->neighbor[i]->dfs_visited == FALSE)
+	    {
+	      nodesUnvisited[noNodesUn] = node->neighbor[i];
+	      noNodesUn++;
+	      low++;
+	      // Search recursively for the neighbors
+	      DFS_visit_bridge_search(node->neighbor[i],compIndex);
+	    }
+	  else // Reached a already visited node
+	    {
+	      return low;
+	    }
+	}
+    }
 }
 
 void DFS(Node* node[],int size)
@@ -406,6 +443,20 @@ void reset_childs(int cCIndex)
     }
 }
 
+void reset_visited_dfs(Node* nodes[], int size )
+{
+  int j = 0;
+  while (j < size)
+    {
+      if (nodes[j] == NULL)
+	{
+	  printf("Tryed to set unvisited a node that does not exist!\n");
+	  fflush(stdout);
+	  exit(0);
+	}
+      nodes[j]->dfs_visited = FALSE;      
+    }
+}
 int main (void)
 {
   int cOne[9] = {0,1,2,3,4,5,6,7,8};

@@ -25,7 +25,7 @@ static int foundKey;
 static int hasCreatedHead;
 static int endPoint[9] = {1,2,3,4,5,6,7,8,0};
 static int endKey;
-static int low = 0;
+static bool hasBridge;
 /*** Prototypes ****/
 void create_graph(int config[]);
 void init_search();
@@ -40,7 +40,7 @@ void DFS(Node* node[], int nComp);
 void DFS_visit(Node* node, int compIndex);
 void reset_childs(int cCIndex);
 void reset_visited_dfs(Node* nodes[], int size );
-int DFS_visit_bridge_search(Node* node, Node* father);
+void DFS_visit_search_bridge(Node* node, Node* father);
 /****************/
 
 void init_create_graph(int cComp)
@@ -100,22 +100,10 @@ void create_iterative(Node* parent)
 		}
 	      else if (foundKey > -1) // There is a found key, just need set in the neighbors
 		{
-		  if  (father->noNeighbor > 3)
-		    {
-		      printf("Tryed to insert more than 4 nodes!\n");
-		      fflush(stdout);
-		      exit(0);
-		    }
 		  if (graph[cCompCreate][foundKey] != NULL)
 		    {
 		      father->neighbor[father->noNeighbor] = graph[cCompCreate][foundKey];
 		      father->noNeighbor++;
-		    }
-		  else
-		    {
-		      printf ("Watch out! there is no such neighbor to be included!(create iteratives)\n");
-		      fflush(stdout);
-		      exit(0);
 		    }
 		}
 	    }
@@ -138,90 +126,35 @@ void create_graph(int config[])
 }
 
 
-void DFS_visit(Node* node, int compIndex)
-{
-  int i;
-  int low;
-  //Mark the node as visited so it won't become child to other nodes
-  node->dfs_visited = TRUE;
-  node->time = preTime;
-  preTime++;
-  print_node(node);
-  fflush(stdout);
-  for (i=0; i<node->noNeighbor; i++)
-    {
-      if(node->neighbor[i]->dfs_visited == FALSE)
-	{
-	  //Add neighbor as a child of node and add an edge to graph
-	  dfsEdges[compIndex]+=1;
-	  add_child(node, node->neighbor[i]);
-	  
-	  low = 0;
-	  noNodesUn = 0;
-	  low = DFS_visit_bridge_search(node->neighbor[i], node);
-
-	  if (low > node->time)
-	    {
-	      printf("Achei uma ponte!/n");
-	      fflush(stdout);
-	      bridge[noBridges][0] = node;
-	      bridge[noBridges][1] = node->neighbor[i];
-	    }
-	
-	  reset_visited_dfs(nodesUnvisited, noNodesUn);
-	      
-	  //Use recently added child as next node to be explored
-	  DFS_visit(node->neighbor[i],compIndex);
-	}
-    }
-}
-
-// Garantir que o node tem dfs_visited = FALSE
-int DFS_visit_bridge_search(Node* node, Node* father)
-{
-  int i;                                                                
-  //Mark the node as visited so it won't become child to other nodes 
-  node->dfs_visited=TRUE;
-  nodesUnvisited[noNodesUn] = node;
-  noNodesUn++;
-  print_node(node);
-  for (i=0; i< node->noNeighbor; i++)
-    {
-      printf ("%d-esimo vizinho a ser visitado\n", i);
-      if (node->neighbor[i] != father)
-	{
-	  if(node->neighbor[i]->dfs_visited == FALSE)
-	    {
-	      nodesUnvisited[noNodesUn] = node->neighbor[i];
-	      noNodesUn++;
-	      low++;
-	      print_node(node->neighbor[i]);
-	      // Search recursively for the neighbors
-	      DFS_visit_bridge_search(node->neighbor[i],node);
-	    }
-	  else // Reached a already visited node
-	    {
-	      printf("Return %d", low);
-	      fflush(stdout);
-	      return low;
-	    }
-	}
-    }
-  return 0;
-}
-
 void DFS(Node* node[],int size)
 {
   int i;
   preTime = 1;
   //Runs DFS from each node in node[]
-  for (i =0; i< size; i++)
+  for (i = 0; i< size; i++)
+  {
+    if (node[i]->dfs_visited == FALSE)
     {
-      if (node[i]->dfs_visited == FALSE)
-	{
-	  DFS_visit(node[i],i);
-	}
+     DFS_visit(node[i],i);
+   }
+ }
+}
+void DFS_visit(Node* node, int compIndex)
+{
+  int i;
+  //Mark the node as visited so it won't become child to other nodes
+  node->dfs_visited=TRUE;
+  node->time = preTime;
+  preTime++;
+  for (i=0; i<node->noNeighbor; i++){
+    if(node->neighbor[i]->dfs_visited == FALSE){
+      //Add neighbor as a child of node and add an edge to graph
+      dfsEdges[compIndex]+=1;
+      add_child(node, node->neighbor[i]);
+      //Use recently added child as next node to be explored
+      DFS_visit(node->neighbor[i],compIndex);
     }
+  }
 }
 
 void set_max_dist(Node* node, int dist)
@@ -473,17 +406,11 @@ void reset_visited_dfs(Node* nodes[], int size )
   int j = 0;
   while (j < size)
     {
-      if (nodes[j] == NULL)
-	{
-	  printf("Tryed to set unvisited a node that does not exist!\n");
-	  fflush(stdout);
-	  exit(0);
-	}
-      printf("node unvisited actually\n");
-      print_node(nodes[j]);
-      nodes[j]->dfs_visited = FALSE;      
+      nodes[j]->dfs_visited = FALSE;
+      j++;
     }
 }
+
 int main (void)
 {
   int cOne[9] = {0,1,2,3,4,5,6,7,8};
@@ -495,43 +422,46 @@ int main (void)
   init_create_graph(1);  
   create_graph(cOne);
 
-  printf ("Finished first CC\n");
+  printf ("Tarefa 1:\nFinished building  first CC\n");
 
   // Create the connected component two
   init_create_graph(2);  
   create_graph(cTwo);
 
-  printf ("Finished second CC\n");
+  printf ("Finished building second CC\n");
   
   // Since first component has the same size as the second
   cCompSize = it;
-  printf("Size of comonents %d", cCompSize + 1);
-  
-  printf("Endpoint Key: %d\n", generate_key(endPoint));
-    
+  printf("Size of each component %d\n", cCompSize + 1);
+  printf("There are 2 connected components one in graph[0] and another in graph[1]\n");
+  printf("There are %d edges in the graph\n", GraphEdges);
+
+  DFS(head, NO_CCOMP);
+  printf("Number of edges in the DFS is: %d, both connected components have the same\nnumber of nodes so they have the same number of edges in the dfs tree\n", dfsEdges[0]);
+
+  // reset the child Node* array to run the BFS
+   reset_childs(0);
+  reset_childs(1);
   // Set the connected component to be the first and the search
   cCompCreate = 0;
   init_search();
   binary_search_mod (0,cCompSize,endKey);
   // Indeed it is on the first connected component and it is on the foundKey index 
   if (foundKey >  1)
-    printf ("Found endPoint first CC!!!\n");
-
+    printf ("Found endPoint first CC!\n");
+  
+  printf("Tarefa 2:\nendPoint:\n");
+  print_node(graph[0][foundKey]);
+  printf("Run a BFS from endPoint ...\n");
   //Search for longest distance from endPoint node
   BFS(graph[0][foundKey]);
   printf("\nStarting search for maximum distance from endPoint\n");
   find_max_dist(graph[0][foundKey],0);
   printf("----MAX DIST FOUND: %d----\n There are two configurations found in the longest layer!\n", MAX_DIST);
-
-  reset_childs(0);
-  reset_childs(1);
-
-  DFS(head, NO_CCOMP);
-  //print_DFS(head[0], 0);
   
   free_list(graph[0], cCompSize);
   printf ("Freed first cc\n");
-  fflush(stdout);
+  
   free_list(graph[1], cCompSize);
   printf ("Freed second cc\n");
 

@@ -19,12 +19,6 @@ Node* create_node(const int nodeConfig[] )
   int i;
   bool hasHole = FALSE;
   Node* newNode = (Node*) malloc(sizeof(Node));
-  if (newNode == NULL)
-    {
-      printf ("Node could not be allocated!\n");
-      fflush(stdout);
-      exit(0);
-    }
   
   // Fill the config, missPiece
   for (i = 0; i < CONFIG_SIZE; i++)
@@ -52,15 +46,6 @@ Node* create_node(const int nodeConfig[] )
   newNode->noNeighbor = 0;
   newNode->noChild = 0;
   newNode->key = generate_key(nodeConfig);
-
-  // If the configuration has no hole then the node is not 
-  if (hasHole == FALSE)
-    {
-      printf("Tryed to create node that had not a hole\n");
-      free(newNode);
-      fflush(stdout);
-      exit(0);
-    }
   
   return newNode;
 }
@@ -69,12 +54,6 @@ void print_node (Node* n)
 {
   int i;
 
-  if (n == NULL)
-    {
-      printf("Tentativa de imprimir nó não instanciado!\n");
-      fflush(stdout);
-      exit(0);
-    }
   for (i = 0; i < CONFIG_SIZE; i++)
     {      
       printf ("[%d]:%d", i, n->config[i]);
@@ -155,12 +134,7 @@ int generate_key(const int config[])
 Node* create_neighbor ( Node* curr, const int config[] )
 {
   Node* newNode;
-  if  (curr->noNeighbor > 3)
-    {
-      printf("Tentou inserir mais do que 4 vizinhos para um mesmo nó! ");
-      fflush(stdout);
-      exit(0);
-    }
+  
   newNode = create_node( config );
   curr->neighbor[curr->noNeighbor] = newNode;
   curr->noNeighbor++;
@@ -182,17 +156,9 @@ void free_list ( Node** graph, int n )
     {
       if (graph[i] != NULL)
 	{
-	  // printf("[%d]key:%d\n",i,graph[i]->key);
-	  fflush(stdout);
 	  free(graph[i]);
 	}
-      else 
-	{
-	  printf("Tryed to free the %dth node which does not exist",i);
-	  fflush(stdout);
-	  exit(0);
-	}
-      
+
     }
   
   printf ("list freed! (%d nodes found) \n", i);

@@ -3,7 +3,7 @@ Sliding Puzzle Game
 This is a simple graph-implemented 3x3 table of:
 http://en.wikipedia.org/wiki/Sliding_puzzle
 
-The graph for the game was generated and was implementes a DFS and BFs
+The graph for the game was generated, implemented a DFS and BFS on it.
 
 Features:
 + Two connected component genereted with "(181440 nodes found)" each

@@ -11,6 +11,8 @@ static Node* nodesUnvisited[MAX_GRAPH_SIZE];
 static int noNodesUn = 0;
 static int MAX_DIST = 0;
 static int cCompCreate;
+static Node* bridge[NO_CCOMP][MAX_GRAPH_SIZE];
+static int noBridges = 0;
 unsigned int it;
 static Node* head[NO_CCOMP];
 static int cCompSize;
@@ -18,13 +20,13 @@ static int dfsEdges[NO_CCOMP];
 static int GraphEdges = 0;
 static int bfsEdges[NO_CCOMP];
 static int preTime;
-// Closest key index found from the input key 
 static int closestKey;
 static int foundKey;
 static int hasCreatedHead;
 static int endPoint[9] = {1,2,3,4,5,6,7,8,0};
 static int endKey;
-
+static int low = 0;
+/*** Prototypes ****/
 void create_graph(int config[]);
 void init_search();
 Node* insert_node (Node* parent,int conf[]);
@@ -36,6 +38,10 @@ void set_max_dist(Node* node, int dist);
 void find_max_dist(Node* node,int dist);
 void DFS(Node* node[], int nComp);
 void DFS_visit(Node* node, int compIndex);
+void reset_childs(int cCIndex);
+void reset_visited_dfs(Node* nodes[], int size );
+int DFS_visit_bridge_search(Node* node, Node* father);
+/****************/
 
 void init_create_graph(int cComp)
 {
@@ -118,7 +124,8 @@ void create_iterative(Node* parent)
   GraphEdges += edges/2;
 }
 
-void create_graph(int config[]){
+void create_graph(int config[])
+{
 
   Node* new = NULL;
 
@@ -133,40 +140,54 @@ void create_graph(int config[]){
 
 void DFS_visit(Node* node, int compIndex)
 {
-  int i,j;
+  int i;
+  int low;
   //Mark the node as visited so it won't become child to other nodes
-  node->dfs_visited=TRUE;
+  node->dfs_visited = TRUE;
   node->time = preTime;
   preTime++;
   print_node(node);
+  fflush(stdout);
   for (i=0; i<node->noNeighbor; i++)
     {
-    if(node->neighbor[i]->dfs_visited == FALSE)
-      {
-      //Add neighbor as a child of node and add an edge to graph
-      dfsEdges[compIndex]+=1;
-      add_child(node, node->neighbor[i]);
+      if(node->neighbor[i]->dfs_visited == FALSE)
+	{
+	  //Add neighbor as a child of node and add an edge to graph
+	  dfsEdges[compIndex]+=1;
+	  add_child(node, node->neighbor[i]);
+	  
+	  low = 0;
+	  noNodesUn = 0;
+	  low = DFS_visit_bridge_search(node->neighbor[i], node);
 
-      noNodesUn = 0;
-      DFS_visit_bridge_search(node->neighbor[i], node);
-
-      reset_dfs_visited(nodesUnvisited, noNodesUn);
+	  if (low > node->time)
+	    {
+	      printf("Achei uma ponte!/n");
+	      fflush(stdout);
+	      bridge[noBridges][0] = node;
+	      bridge[noBridges][1] = node->neighbor[i];
+	    }
+	
+	  reset_visited_dfs(nodesUnvisited, noNodesUn);
 	      
-      //Use recently added child as next node to be explored
-      DFS_visit(node->neighbor[i],compIndex);
+	  //Use recently added child as next node to be explored
+	  DFS_visit(node->neighbor[i],compIndex);
+	}
     }
-  }
 }
 
 // Garantir que o node tem dfs_visited = FALSE
 int DFS_visit_bridge_search(Node* node, Node* father)
 {
-  int i;
-  int low = 0;
-  //Mark the node as visited so it won't become child to other nodes
+  int i;                                                                
+  //Mark the node as visited so it won't become child to other nodes 
   node->dfs_visited=TRUE;
+  nodesUnvisited[noNodesUn] = node;
+  noNodesUn++;
+  print_node(node);
   for (i=0; i< node->noNeighbor; i++)
     {
+      printf ("%d-esimo vizinho a ser visitado\n", i);
       if (node->neighbor[i] != father)
 	{
 	  if(node->neighbor[i]->dfs_visited == FALSE)
@@ -174,15 +195,19 @@ int DFS_visit_bridge_search(Node* node, Node* father)
 	      nodesUnvisited[noNodesUn] = node->neighbor[i];
 	      noNodesUn++;
 	      low++;
+	      print_node(node->neighbor[i]);
 	      // Search recursively for the neighbors
-	      DFS_visit_bridge_search(node->neighbor[i],compIndex);
+	      DFS_visit_bridge_search(node->neighbor[i],node);
 	    }
 	  else // Reached a already visited node
 	    {
+	      printf("Return %d", low);
+	      fflush(stdout);
 	      return low;
 	    }
 	}
     }
+  return 0;
 }
 
 void DFS(Node* node[],int size)
@@ -454,6 +479,8 @@ void reset_visited_dfs(Node* nodes[], int size )
 	  fflush(stdout);
 	  exit(0);
 	}
+      printf("node unvisited actually\n");
+      print_node(nodes[j]);
       nodes[j]->dfs_visited = FALSE;      
     }
 }
